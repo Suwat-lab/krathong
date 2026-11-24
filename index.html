@@ -374,6 +374,7 @@ footer a{color:var(--candle)}
         <button class="btn icon-btn" id="soundBtn" type="button" aria-expanded="false" aria-controls="soundPanel" aria-label="ตั้งค่าภาพและเสียง" title="ตั้งค่าภาพและเสียง"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 7h4m4 0h10M3 17h10m4 0h4"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg><span>ตั้งค่า</span></button>
         <div class="sound-panel" id="soundPanel" hidden role="group" aria-label="ตั้งค่าภาพและเสียง">
           <label class="toggle" for="powerSave"><input type="checkbox" id="powerSave"><span class="track" aria-hidden="true"></span><span>ประหยัดแบต<br><span class="opt">ลดความละเอียดและจำกัดภาพเคลื่อนไหวที่ 30 เฟรม/วินาที</span></span></label>
+          <label class="toggle" for="kidsToggle"><input type="checkbox" id="kidsToggle" checked><span class="track" aria-hidden="true"></span><span>เด็กลงน้ำเก็บกระทง<br><span class="opt">เด็ก ๆ ลุยน้ำมาเก็บกระทงที่ลอยผ่านแล้วเอาไปคืนให้ลอยใหม่ ไม่เอากระทงของคุณ</span></span></label>
           <label class="toggle" for="sndMusic"><input type="checkbox" id="sndMusic"><span class="track" aria-hidden="true"></span><span>เพลงประกอบ<br><span class="opt" id="musicName">รำวงลอยกระทง</span></span></label>
           <label class="file-pick">เลือกไฟล์เพลงจากเครื่องนี้<input type="file" id="musicFile" accept="audio/*" class="sr"></label>
           <button class="btn btn-sm btn-quiet" type="button" id="resetMusic" hidden>กลับไปใช้เพลงของงาน</button>
@@ -1306,7 +1307,114 @@ function chip(text, x, y){
   ctx.fillStyle = '#1c1206'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y - h/2 + 1);
   ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
 }
+/* ---------------- kids wading in to collect krathongs ----------------
+   Purely visual and local to this screen: a child wades in from the downstream (right) side, scoops up a krathong
+   that is drifting by, holds it overhead and carries it out of the river. Nothing is stored or removed for anyone
+   else: the krathong floats back in after a while. Your own krathong is never taken. */
+let kidsOn = true;
+try { kidsOn = localStorage.getItem('e-kratong.kids') !== 'off'; } catch (e) {}
+const kids = [], kidReturns = [];
+let nextKid = performance.now() + 7000;
+const KID_LINES = ['ได้แล้ว!', 'สวยจังเลย', 'เดี๋ยวเอาไปคืนนะ', 'หนูเก็บให้!'];
+const KID_SHIRTS = ['#3b5b7a', '#7a4b3b', '#4b7a5b', '#6b4b7a', '#7a6a3b'];
+const clampAbs = (v, m) => Math.max(-m, Math.min(m, v));
+function kidTarget(now){
+  let best = null;
+  for (const b of boats.values()){
+    if (b.launch || b.taken || b.item.k === selectedK || b.item.k === lastMineK || isMine(b.item)) continue;
+    if (b.x < W*0.3 || b.x > W - 50 || now - b.born < 4000) continue;
+    if (!best || b.x > best.x) best = b;
+  }
+  return best;
+}
+function releaseKids(now){
+  for (const k of kids){
+    if (k.boat) k.boat.taken = false;
+    if (k.item) kidReturns.push({ item:k.item, at:(now || performance.now()) + 2500 });
+  }
+  kids.length = 0;
+}
+function updateKids(dt, now){
+  // krathongs a child took come back to the river after a while
+  for (let i = kidReturns.length - 1; i >= 0; i--){
+    const r = kidReturns[i]; if (now < r.at) continue;
+    kidReturns.splice(i, 1);
+    const it = allItems().find(x => x.k === r.item.k);
+    if (it && !boats.has(it.k)){ const nb = makeBoat(it); nb.x = -90 - Math.random()*40; boats.set(it.k, nb); shownAt.set(it.k, now); }
+  }
+  if (!kidsOn || reduceMotion || !W || !sceneVisible){ if (kids.length) releaseKids(now); return; }
+  if (kids.length < (W > 900 ? 2 : 1) && now > nextKid){
+    nextKid = now + 4000;
+    const t = boats.size >= 3 ? kidTarget(now) : null;
+    if (t){ t.taken = true; kids.push({ x:W + 50, z:t.z, state:'wade', t:0, boat:t, item:null, seed:Math.random()*100, shirt:KID_SHIRTS[Math.floor(Math.random()*KID_SHIRTS.length)], line:KID_LINES[Math.floor(Math.random()*KID_LINES.length)] }); }
+  }
+  for (let i = kids.length - 1; i >= 0; i--){
+    const k = kids[i], s = SC*(0.42 + 0.95*k.z);
+    if (k.state === 'wade' || k.state === 'scoop'){
+      const b = k.boat;
+      if (!b || (k.state === 'wade' && (boats.get(b.item.k) !== b || b.launch || b.item.k === selectedK))){ if (b) b.taken = false; k.boat = null; k.state = 'carry'; k.t = 0; continue; }
+      if (!k.item || k.state === 'wade'){
+        const dx = b.x + 27*s - k.x, dz = b.z - k.z;
+        k.x += clampAbs(dx, 68*s*dt); k.z += clampAbs(dz, 0.2*dt);
+        if (k.state === 'wade' && Math.abs(dx) < 5 && Math.abs(dz) < 0.03){ k.state = 'scoop'; k.t = 0; }
+      }
+      if (k.state === 'scoop'){
+        k.t += dt;
+        if (k.t >= 0.5 && !k.item){
+          k.item = b.item; boats.delete(b.item.k); k.boat = null;
+          kidReturns.push({ item:k.item, at:now + 14000 });
+          const { y0, y1 } = lane(); addRing(k.x - 20*s, y0 + (y1 - y0)*k.z, s*0.9);
+        }
+        if (k.t >= 1.4){ k.state = 'carry'; k.t = 0; }
+      }
+    } else {   // carry: wade back out downstream, holding the krathong up
+      k.t += dt; k.x += 46*s*dt;
+      if (k.x > W + 80){ kids.splice(i, 1); nextKid = now + 14000 + Math.random()*20000; }
+    }
+  }
+}
+function drawKid(k){
+  const { y0, y1 } = lane(), y = y0 + (y1 - y0)*k.z, s = SC*(0.42 + 0.95*k.z), x = k.x;
+  const step = Math.sin(T*6 + k.seed), bob = Math.sin(T*2.4 + k.seed)*0.8*s;
+  const holding = k.item && (k.state === 'carry' || (k.state === 'scoop' && k.t > 0.5));
+  // hands: [left, right] as offsets from the feet at the waterline
+  let hl, hr;
+  if (k.state === 'scoop'){
+    const p = k.t/1.4;
+    if (p < 0.5){ const e = Math.min(1, p/0.3); hl = [-11*s - 5*s*e, -17*s + 12*s*e]; hr = [11*s - 22*s*e, -17*s + 11*s*e]; }   // reach down to the water
+    else { const e = Math.min(1, (p - 0.5)/0.4); hl = [-16*s + 9*s*e, -5*s - 51*s*e]; hr = [-11*s + 18*s*e, -6*s - 50*s*e]; }              // lift it overhead
+  } else if (k.state === 'carry' && k.item){ hl = [-7*s, -56*s]; hr = [7*s, -56*s]; }
+  else { hl = [-11*s, -17*s + step*2*s]; hr = [11*s, -17*s - step*2*s]; }
+  ctx.save(); ctx.lineCap = 'round';
+  // warm light from the krathong it holds
+  if (holding){
+    const g = ctx.createRadialGradient(x, y - 44*s, 0, x, y - 44*s, 40*s); g.addColorStop(0, 'rgba(255,196,120,.32)'); g.addColorStop(1, 'rgba(255,196,120,0)');
+    ctx.fillStyle = g; ctx.fillRect(x - 40*s, y - 84*s, 80*s, 80*s);
+  }
+  // arms (behind the body), body, head
+  ctx.strokeStyle = '#6b4c3a'; ctx.lineWidth = 3.4*s;
+  for (const [h, sx] of [[hl, -6.2], [hr, 6.2]]){ ctx.beginPath(); ctx.moveTo(x + sx*s, y - 31*s + bob); ctx.lineTo(x + h[0], y + h[1] + bob); ctx.stroke(); }
+  ctx.fillStyle = k.shirt; rrect(ctx, x - 7.5*s, y - 36*s + bob, 15*s, 28*s, 5*s); ctx.fill();
+  ctx.fillStyle = '#7a5642'; ell(ctx, x, y - 42*s + bob, 6.4*s, 6.8*s); ctx.fill();
+  ctx.fillStyle = '#1a1511'; ctx.beginPath(); ctx.arc(x, y - 43.5*s + bob, 6.8*s, Math.PI*1.02, Math.PI*1.98); ctx.fill();
+  if (holding){ ctx.strokeStyle = 'rgba(255,210,150,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y - 42*s + bob, 6.8*s, Math.PI*1.1, Math.PI*1.9); ctx.stroke(); }
+  // the water hides the legs
+  ctx.fillStyle = 'rgba(10,32,52,.62)'; ell(ctx, x, y - 7*s, 15*s, 5.5*s); ctx.fill();
+  ctx.strokeStyle = 'rgba(230,240,245,.35)'; ctx.lineWidth = 1;
+  for (let i = 0; i < 2; i++){ const rr = (13 + i*8 + (Math.sin(T*2 + i + k.seed) + 1)*1.6)*s; ctx.globalAlpha = 0.5 - i*0.2; ell(ctx, x, y - 6*s, rr, rr*0.26); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+  // the krathong held overhead
+  if (holding){
+    const it = k.item, own = it.craft ? craftImage(it.k) : null, ks = s*0.85;
+    ctx.save(); ctx.translate(x, y - 54*s + bob*0.4);
+    if (own) ctx.drawImage(own, -30*ks, -52*ks, 60*ks, 60*ks); else drawBoatSprite(ctx, it.t, ks, k.seed);
+    ctx.restore();
+    if (k.state === 'carry' && k.t < 1.8) chip(k.line, x, y - 112*s);
+  }
+  ctx.restore();
+}
 function drawBoats(dt, now){
+  updateKids(dt, now);
   const list = Array.from(boats.values());
   for (const b of list){
     if (b.launch){
@@ -1319,7 +1427,9 @@ function drawBoats(dt, now){
     }
   }
   const live = Array.from(boats.values()).sort((a, b) => a.z - b.z);
+  const ks = kids.length ? kids.slice().sort((a, b) => a.z - b.z) : null; let ki = 0;   // children stand in the water at their own depth
   for (const b of live){
+    if (ks) while (ki < ks.length && ks[ki].z <= b.z) drawKid(ks[ki++]);
     const { x, y, s } = boatGeom(b);
     if (x < -100 || x > W + 100) continue;
     const bob = reduceMotion ? 0 : Math.sin(T*1.5 + b.seed)*1.4*s;
@@ -1349,6 +1459,7 @@ function drawBoats(dt, now){
     ctx.globalAlpha = 1;
     if (b.item.k === lastMineK) chip('ของคุณ', x, y - 46*s);
   }
+  if (ks) while (ki < ks.length) drawKid(ks[ki++]);
 }
 const meteors = [];
 let nextMeteor = performance.now() + 5000;
@@ -1571,6 +1682,13 @@ powerSave.addEventListener('change', () => {
   try { localStorage.setItem('e-kratong.powerSave', powerSaving ? '1' : '0'); } catch (e) {}
   DPR = pixelRatio(); nextPaint = performance.now(); slowFor = 0;
   sprites.clear(); previewSprite = null; resize(); sizePreview();
+});
+const kidsToggle = $('#kidsToggle');
+kidsToggle.checked = kidsOn;
+kidsToggle.addEventListener('change', () => {
+  kidsOn = kidsToggle.checked;
+  try { localStorage.setItem('e-kratong.kids', kidsOn ? 'on' : 'off'); } catch (e) {}
+  if (!kidsOn) releaseKids();
 });
 soundBtn.addEventListener('click', () => setSoundPanel(soundPanel.hidden));
 document.addEventListener('click', (e) => {

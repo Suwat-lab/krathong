@@ -374,7 +374,7 @@ footer a{color:var(--candle)}
         <button class="btn icon-btn" id="soundBtn" type="button" aria-expanded="false" aria-controls="soundPanel" aria-label="ตั้งค่าภาพและเสียง" title="ตั้งค่าภาพและเสียง"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 7h4m4 0h10M3 17h10m4 0h4"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg><span>ตั้งค่า</span></button>
         <div class="sound-panel" id="soundPanel" hidden role="group" aria-label="ตั้งค่าภาพและเสียง">
           <label class="toggle" for="powerSave"><input type="checkbox" id="powerSave"><span class="track" aria-hidden="true"></span><span>ประหยัดแบต<br><span class="opt">ลดความละเอียดและจำกัดภาพเคลื่อนไหวที่ 30 เฟรม/วินาที</span></span></label>
-          <label class="toggle" for="kidsToggle"><input type="checkbox" id="kidsToggle" checked><span class="track" aria-hidden="true"></span><span>เด็กลงน้ำเก็บกระทง<br><span class="opt">เด็ก ๆ ลุยน้ำมาเก็บกระทงที่ลอยผ่านแล้วเอาไปคืนให้ลอยใหม่ ไม่เอากระทงของคุณ</span></span></label>
+          <label class="toggle" for="kidsToggle"><input type="checkbox" id="kidsToggle" checked><span class="track" aria-hidden="true"></span><span>เด็กลงน้ำเก็บกระทง<br><span class="opt" id="kidsNote">เด็ก ๆ ว่ายน้ำเล่นรอ แล้วลงมาเก็บกระทงทุก 2 ชั่วโมง ไม่เอากระทงของคุณ</span></span></label>
           <label class="toggle" for="sndMusic"><input type="checkbox" id="sndMusic"><span class="track" aria-hidden="true"></span><span>เพลงประกอบ<br><span class="opt" id="musicName">รำวงลอยกระทง</span></span></label>
           <label class="file-pick">เลือกไฟล์เพลงจากเครื่องนี้<input type="file" id="musicFile" accept="audio/*" class="sr"></label>
           <button class="btn btn-sm btn-quiet" type="button" id="resetMusic" hidden>กลับไปใช้เพลงของงาน</button>
@@ -1314,8 +1314,21 @@ function chip(text, x, y){
 let kidsOn = true;
 try { kidsOn = localStorage.getItem('e-kratong.kids') !== 'off'; } catch (e) {}
 const kids = [], kidReturns = [];
-let nextKid = performance.now() + 3500;
-const KID_LINES = ['ได้แล้ว!', 'สวยจังเลย', 'เดี๋ยวเอาไปคืนนะ', 'หนูเก็บให้!', 'ว้าว แสงสวย', 'หอมจังเลย', 'ใครทำน้า', 'ไม่ทิ้งขยะนะ'];
+/* what a child says while holding up a krathong */
+const KID_LINES = ['ได้แล้ว!', 'สวยจังเลย', 'เดี๋ยวเอาไปคืนนะ', 'หนูเก็บให้!', 'ว้าว แสงสวย', 'หอมจังเลย', 'ใครทำน้า', 'ไม่ทิ้งขยะนะ',
+  'อันนี้สวย', 'อันนี้เขียนดี', 'มีเงินไหม', 'มีตังค์ในกระทงไหมนะ', 'ขออ่านหน่อยนะ', 'เบาจัง ไม่มีตังค์', 'ของใครอ่ะ ขอดูหน่อย', 'อันนี้ใหญ่สุดแล้ว'];
+/* chats between two children while they wait: [first says, second answers] */
+const KID_CHATS = [
+  ['มีเงินไหม', 'ไม่มี มีแต่กระทง'], ['มีเงินไหม', 'มีแต่ใจ'], ['มีเงินไหม', 'ในกระทงมีไหมล่ะ'],
+  ['อันนี้สวย', 'อันนี้เขียนดี'], ['กระทงใบนั้นหอมจัง', 'นั่นมันดอกบัวนะ'],
+  ['เมื่อกี้เห็นกระทงใครลอยมา', 'ไม่รู้ แต่สวยกว่าของแกแน่'], ['น้ำเย็นจัง', 'ก็กลางคืนนะสิ'],
+  ['ใครขอพรขอแฟนอ่ะ', 'ขอเกรด A ต่างหาก'], ['เก็บได้กี่ใบแล้ว', 'ยังเลย ขอเลือกใบสวย ๆ'],
+  ['ใครขี้เกียจว่ายก่อนเลี้ยงข้าวเหนียวมะม่วง', 'ว่ายก่อนก็ได้ แต่แกเลี้ยงนะ'], ['อันนี้เขียนว่าขอให้รวย', 'อ่านออกเสียงดัง ๆ ทำไม'],
+  ['ดวงจันทร์ใหญ่จัง', 'เดี๋ยวก็ตกลงน้ำ'], ['แกว่ายท่าไหนอ่ะ', 'ท่าหมาไล่เป็ด'], ['กระทงใบนี้ใครทำอ่ะ', 'คนที่ไม่ทิ้งขยะ'],
+  ['หิวแล้ว', 'เก็บกระทงขนมครกสิ'], ['เห็นปลาไหม', 'นั่นมันขาแก'], ['กลัวจระเข้ไหม', 'ตรงนี้มีแต่ปลาหมึกกระดาษ'],
+  ['อันนี้เขียนดี', 'อ่านออกเหรอ ตัวหนังสือแกยังเขียนไม่เสร็จเลย'], ['ว่ายเร็วกว่ากันไหม', 'ไม่เอา เดี๋ยวผมเปียก'], ['ใครเป่าฟองใส่หู', 'ฟองธรรมชาติ ไม่ต้องจ่ายตังค์']
+];
+const KID_MUTTERS = ['อันนี้สวย', 'มีเงินไหมนะ', 'น้ำเย็นจัง', 'ขอให้รวย ๆ', 'ดวงจันทร์สวยจัง', 'ว่ายคนเดียวเหงาจัง', 'เมื่อไหร่จะถึงรอบเก็บนะ'];
 const KID_SHIRTS = ['#3b5b7a', '#7a4b3b', '#4b7a5b', '#6b4b7a', '#7a6a3b', '#8a4a5a'];
 const KID_SKIN = ['#7a5642', '#8a634a', '#6b4a3a', '#94705a'];
 const KID_SIZE = 1.3;   // children are drawn a little larger than the krathong scale so they read at a glance
@@ -1346,6 +1359,32 @@ function releaseKids(now){
   }
   kids.length = 0;
 }
+/* Rhythm: a collecting round every 2 hours on the even hour (00:00, 02:00, 04:00 …, server clock when we have one) that
+   lasts KID_ROUND_MS. Between rounds 1-3 children (random each wait) swim and play, waiting for the next round.
+   Add ?kids=collect to the address to force a round (handy for demos). */
+const KID_ROUND_MS = 4*60*1000, KID_EVERY_H = 2;
+const kidForce = /[?&]kids=collect\b/.test(location.search);
+const kidMaxCollectors = () => (W > 1300 ? 3 : W > 900 ? 2 : 1);
+function kidsCollecting(ms){
+  if (kidForce) return true;
+  const d = new Date(ms), into = (((d.getHours() % KID_EVERY_H)*60 + d.getMinutes())*60 + d.getSeconds())*1000 + d.getMilliseconds();
+  return into < KID_ROUND_MS;
+}
+function nextKidRound(ms){
+  const d = new Date(ms); d.setMinutes(0, 0, 0);
+  d.setHours(d.getHours() + KID_EVERY_H - (d.getHours() % KID_EVERY_H));
+  return d;
+}
+let kidPhase = null, kidPlayN = 1, nextKid2 = 0, nextChat = 0;
+const rndPick = (a) => a[Math.floor(Math.random()*a.length)];
+function newKid(over){
+  return Object.assign({ x:0, z:0.7, state:'play', t:0, boat:null, item:null, seed:Math.random()*100, shirt:rndPick(KID_SHIRTS), skin:rndPick(KID_SKIN),
+    style:Math.floor(Math.random()*3), line:rndPick(KID_LINES), tx:null, tz:null, rest:0, wave:0, dir:1, stroke:0 }, over);
+}
+function pickSwimSpot(k){
+  k.tx = W*(0.1 + Math.random()*0.8); k.tz = 0.45 + Math.random()*0.5;
+  if (Math.abs(k.tx - k.x) < 60) k.tx = Math.max(W*0.08, Math.min(W*0.92, k.x + (Math.random() < 0.5 ? -1 : 1)*(90 + Math.random()*160)));
+}
 function updateKids(dt, now){
   // krathongs a child took come back to the river after a while
   for (let i = kidReturns.length - 1; i >= 0; i--){
@@ -1355,21 +1394,84 @@ function updateKids(dt, now){
     if (it && !boats.has(it.k)){ const nb = makeBoat(it); nb.x = -90 - Math.random()*40; boats.set(it.k, nb); shownAt.set(it.k, now); }
   }
   if (!kidsOn || reduceMotion || !W || !sceneVisible){ if (kids.length) releaseKids(now); return; }
-  if (kids.length < (W > 1300 ? 3 : W > 900 ? 2 : 1) && now > nextKid){
-    nextKid = now + 2500;
+  const collecting = kidsCollecting(nowSync());
+  const phase = collecting ? 'collect' : 'wait';
+  if (phase !== kidPhase){
+    kidPhase = phase;
+    if (phase === 'wait'){
+      kidPlayN = 1 + Math.floor(Math.random()*3);   // 1-3 children play while waiting
+      for (const k of kids) if (k.state === 'wade'){ if (k.boat) k.boat.taken = false; k.boat = null; k.state = 'play'; k.tx = null; }
+    }
+  }
+  if (phase === 'wait'){
+    // fewer than wanted: another child comes in from either bank; more than wanted: the extras swim away
+    if (kids.filter(k => k.state === 'play').length < kidPlayN && now > nextKid2){
+      nextKid2 = now + 2500 + Math.random()*3000;
+      const fromRight = Math.random() < 0.5, z = 0.5 + Math.random()*0.45;
+      const k = newKid({ x:fromRight ? W + 50 : -50, z }); pickSwimSpot(k); kids.push(k);
+    }
+    const play = kids.filter(k => k.state === 'play');
+    if (play.length > kidPlayN){ const k = play[play.length - 1]; k.state = 'leave'; k.dir = k.x > W/2 ? 1 : -1; }
+  } else if (now > nextKid2){
+    nextKid2 = now + 2500;
+    const free = kids.filter(k => k.state === 'play' || k.state === 'wade');
     const t = boats.size >= 3 ? kidTarget(now) : null;
-    const pick = (a) => a[Math.floor(Math.random()*a.length)];
-    if (t){ t.taken = true; kids.push({ x:W + 50, z:t.z, state:'wade', t:0, boat:t, item:null, seed:Math.random()*100, shirt:pick(KID_SHIRTS), skin:pick(KID_SKIN), style:Math.floor(Math.random()*3), line:pick(KID_LINES) }); }
+    if (t){
+      const idle = free.find(k => k.state === 'play');
+      if (idle){ idle.boat = t; t.taken = true; idle.state = 'wade'; }
+      else if (kids.filter(k => k.state !== 'leave').length < kidMaxCollectors()){ const k = newKid({ x:W + 50, z:t.z, state:'wade', boat:t }); t.taken = true; kids.push(k); }
+    }
+    // not enough krathongs to collect: children keep playing; extra play children beyond the cap leave
+    const play = kids.filter(k => k.state === 'play');
+    if (play.length > kidMaxCollectors()){ const k = play[play.length - 1]; k.state = 'leave'; k.dir = k.x > W/2 ? 1 : -1; }
+  }
+  // while waiting the children chat: two of them trade a joke, a lone child mutters now and then
+  if (phase === 'wait' && now > (nextChat || 0)){
+    const talkers = kids.filter(k => k.state === 'play' && k.x > 30 && k.x < W - 30);
+    if (talkers.length >= 2){
+      const a = talkers[Math.floor(Math.random()*talkers.length)], b = talkers.filter(k => k !== a).sort((p, q) => Math.abs(p.x - a.x) - Math.abs(q.x - a.x))[0];
+      const c = rndPick(KID_CHATS);
+      a.say = { text:c[0], t0:now, t1:now + 2400 }; b.say = { text:c[1], t0:now + 2600, t1:now + 5000 };
+      a.rest = Math.max(a.rest, 5.2); b.rest = Math.max(b.rest, 5.2); a.wave = b.wave = 0;
+      a.dir = b.x > a.x ? 1 : -1; b.dir = -a.dir;
+      nextChat = now + 9000 + Math.random()*9000;
+    } else if (talkers.length === 1){
+      talkers[0].say = { text:rndPick(KID_MUTTERS), t0:now, t1:now + 2600 };
+      nextChat = now + 11000 + Math.random()*10000;
+    } else nextChat = now + 3000;
   }
   for (let i = kids.length - 1; i >= 0; i--){
     const k = kids[i], s = SC*(0.42 + 0.95*k.z)*KID_SIZE;
+    k.moving = false;
+    if (k.state === 'play'){
+      if (k.rest > 0){
+        k.rest -= dt;
+        if (k.wave > 0) k.wave -= dt;
+        if (k.rest <= 0) pickSwimSpot(k);
+      } else {
+        const dx = k.tx - k.x, dz = k.tz - k.z, d = Math.hypot(dx, dz*300);
+        if (d < 10){ k.rest = 1.5 + Math.random()*3.5; k.wave = Math.random() < 0.55 ? Math.min(k.rest, 1.8) : 0; if (Math.random() < 0.5) addRing(k.x, lane().y0 + (lane().y1 - lane().y0)*k.z, s*0.8); }
+        else { k.x += clampAbs(dx, 26*s*dt); k.z += clampAbs(dz, 0.05*dt); if (Math.abs(dx) > 2) k.dir = dx > 0 ? 1 : -1; k.moving = true; k.stroke += dt*5; }
+      }
+      k.z = Math.max(0.4, Math.min(0.97, k.z));
+      continue;
+    }
+    if (k.state === 'leave'){
+      k.x += k.dir*34*s*dt; k.moving = true; k.stroke += dt*5;
+      if (k.x > W + 90 || k.x < -90) kids.splice(i, 1);
+      continue;
+    }
     if (k.state === 'wade' || k.state === 'scoop'){
       const b = k.boat;
-      if (!b || (k.state === 'wade' && (boats.get(b.item.k) !== b || b.launch || b.item.k === selectedK))){ if (b) b.taken = false; k.boat = null; k.state = 'carry'; k.t = 0; continue; }
+      if (!b || (k.state === 'wade' && (boats.get(b.item.k) !== b || b.launch || b.item.k === selectedK))){ if (b) b.taken = false; k.boat = null; if (k.state === 'wade'){ k.state = 'play'; k.tx = null; pickSwimSpot(k); } else { k.state = 'carry'; k.t = 0; } continue; }
       if (!k.item || k.state === 'wade'){
         const dx = b.x + 27*s - k.x, dz = b.z - k.z;
-        k.x += clampAbs(dx, 68*s*dt); k.z += clampAbs(dz, 0.2*dt);
-        if (k.state === 'wade' && Math.abs(dx) < 5 && Math.abs(dz) < 0.03){ k.state = 'scoop'; k.t = 0; }
+        k.x += clampAbs(dx, 50*s*dt); k.z += clampAbs(dz, 0.2*dt);
+        if (k.state === 'wade'){
+          if (Math.abs(dx) > 2) k.dir = dx > 0 ? 1 : -1;
+          k.moving = Math.abs(dx) > 4 || Math.abs(dz) > 0.02; if (k.moving) k.stroke += dt*5;
+        }
+        if (k.state === 'wade' && Math.abs(dx) < 5 && Math.abs(dz) < 0.03){ k.state = 'scoop'; k.t = 0; k.dir = -1; }
       }
       if (k.state === 'scoop'){
         k.t += dt;
@@ -1381,56 +1483,83 @@ function updateKids(dt, now){
         }
         if (k.t >= 1.4){ k.state = 'carry'; k.t = 0; }
       }
-    } else {   // carry: wade back out downstream, holding the krathong up
-      k.t += dt; k.x += 46*s*dt;
-      if (k.x > W + 80){ kids.splice(i, 1); nextKid = now + 5000 + Math.random()*9000; }
+    } else {   // carry: swim back out downstream, one arm holding the krathong up
+      k.t += dt; k.x += 38*s*dt; k.dir = 1; k.moving = true; k.stroke += dt*5;
+      if (k.x > W + 80){ kids.splice(i, 1); nextKid2 = now + 3000 + Math.random()*5000; }
     }
   }
 }
+/* speech bubble for children chatting (white, tail pointing down), distinct from the amber chip */
+function bubble(text, x, y){
+  ctx.font = '500 12px "IBM Plex Sans Thai Looped", sans-serif';
+  const w = ctx.measureText(text).width + 18, h = 24, bx = Math.max(6, Math.min(W - w - 6, x - w/2));
+  ctx.fillStyle = 'rgba(250,247,238,.96)'; rrect(ctx, bx, y - h - 7, w, h, 12); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x - 5, y - 8); ctx.lineTo(x + 1, y); ctx.lineTo(x + 5, y - 8); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#1d2a36'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, bx + w/2, y - h/2 - 6);
+  ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+}
+/* Every child is drawn swimming: only the head and shoulders show above the water and they get around with arm strokes.
+   When it picks up a krathong one arm reaches down to the water and then holds it up while the other arm keeps stroking. */
 function drawKid(k){
   const { y0, y1 } = lane(), y = y0 + (y1 - y0)*k.z, s = SC*(0.42 + 0.95*k.z)*KID_SIZE, x = k.x;
-  const skin = k.skin || '#7a5642', step = Math.sin(T*6 + k.seed), bob = Math.sin(T*2.4 + k.seed)*0.8*s;
-  const holding = k.item && (k.state === 'carry' || (k.state === 'scoop' && k.t > 0.5));
-  // hands: [left, right] as offsets from the feet at the waterline
-  let hl, hr;
-  if (k.state === 'scoop'){
-    const p = k.t/1.4;
-    if (p < 0.5){ const e = Math.min(1, p/0.3); hl = [-11*s - 5*s*e, -17*s + 12*s*e]; hr = [11*s - 22*s*e, -17*s + 11*s*e]; }   // reach down to the water
-    else { const e = Math.min(1, (p - 0.5)/0.4); hl = [-16*s + 9*s*e, -5*s - 51*s*e]; hr = [-11*s + 18*s*e, -6*s - 50*s*e]; }              // lift it overhead
-  } else if (k.state === 'carry' && k.item){ hl = [-7*s, -56*s]; hr = [7*s, -56*s]; }
-  else { hl = [-11*s, -17*s + step*2*s]; hr = [11*s, -17*s - step*2*s]; }
+  const skin = k.skin || '#7a5642', moving = !!k.moving, dir = k.dir || 1, ph = k.stroke;
+  const bob = Math.sin(T*2 + k.seed)*1.1*s, shY = y - 8*s + bob;
+  const scooping = k.state === 'scoop', holding = !!k.item && (k.state === 'carry' || (scooping && k.t > 0.5));
+  const nowMs = performance.now();
   ctx.save(); ctx.lineCap = 'round';
   // warm light from the krathong it holds
   if (holding){
-    const g = ctx.createRadialGradient(x, y - 44*s, 0, x, y - 44*s, 40*s); g.addColorStop(0, 'rgba(255,196,120,.32)'); g.addColorStop(1, 'rgba(255,196,120,0)');
-    ctx.fillStyle = g; ctx.fillRect(x - 40*s, y - 84*s, 80*s, 80*s);
+    const g = ctx.createRadialGradient(x, y - 22*s, 0, x, y - 22*s, 34*s); g.addColorStop(0, 'rgba(255,196,120,.3)'); g.addColorStop(1, 'rgba(255,196,120,0)');
+    ctx.fillStyle = g; ctx.fillRect(x - 34*s, y - 56*s, 68*s, 68*s);
   }
-  // arms (behind the body), body, head
-  ctx.strokeStyle = skin; ctx.lineWidth = 3.4*s;
-  for (const [h, sx] of [[hl, -6.2], [hr, 6.2]]){ ctx.beginPath(); ctx.moveTo(x + sx*s, y - 31*s + bob); ctx.lineTo(x + h[0], y + h[1] + bob); ctx.stroke(); }
-  ctx.fillStyle = k.shirt; rrect(ctx, x - 7.5*s, y - 36*s + bob, 15*s, 28*s, 5*s); ctx.fill();
-  ctx.fillStyle = skin; ell(ctx, x, y - 42*s + bob, 6.4*s, 6.8*s); ctx.fill();
-  ctx.fillStyle = '#1a1511'; ctx.beginPath(); ctx.arc(x, y - 43.5*s + bob, 6.8*s, Math.PI*1.02, Math.PI*1.98); ctx.fill();
-  if (k.style === 0){ ell(ctx, x, y - 52.6*s + bob, 2.6*s, 2.6*s); ctx.fill(); }                                   // top-knot (จุก)
-  else if (k.style === 1){ ell(ctx, x - 6.6*s, y - 41*s + bob, 2.4*s, 3*s); ctx.fill(); ell(ctx, x + 6.6*s, y - 41*s + bob, 2.4*s, 3*s); ctx.fill(); }   // pigtails
-  // a small smile, brighter while the child holds a krathong
-  ctx.strokeStyle = 'rgba(30,18,12,.75)'; ctx.lineWidth = Math.max(0.8, 0.9*s); ctx.beginPath(); ctx.arc(x, y - 40.6*s + bob, 2.3*s, 0.2, Math.PI - 0.2); ctx.stroke();
-  ctx.strokeStyle = skin; ctx.lineWidth = 3.4*s;
-  if (holding){ ctx.strokeStyle = 'rgba(255,210,150,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y - 42*s + bob, 6.8*s, Math.PI*1.1, Math.PI*1.9); ctx.stroke(); }
-  // the water hides the legs
-  ctx.fillStyle = 'rgba(10,32,52,.62)'; ell(ctx, x, y - 7*s, 15*s, 5.5*s); ctx.fill();
-  ctx.strokeStyle = 'rgba(230,240,245,.35)'; ctx.lineWidth = 1;
-  for (let i = 0; i < 2; i++){ const rr = (13 + i*8 + (Math.sin(T*2 + i + k.seed) + 1)*1.6)*s; ctx.globalAlpha = 0.5 - i*0.2; ell(ctx, x, y - 6*s, rr, rr*0.26); ctx.stroke(); }
+  // ripples around the body
+  ctx.strokeStyle = 'rgba(230,240,245,.4)'; ctx.lineWidth = 1;
+  for (let i = 0; i < 3; i++){ const rr = (15 + i*8 + ((T*(moving ? 8 : 3) + i*3 + k.seed) % 9))*s; ctx.globalAlpha = 0.5*(1 - i*0.28); ell(ctx, x, y - 2*s, rr, rr*0.26); ctx.stroke(); }
   ctx.globalAlpha = 1;
-  // the krathong held overhead
+  // arms: [shoulder offset, hand x, hand y]
+  const hands = [];
+  const stroke = (sx, a) => moving
+    ? [sx, sx + dir*(8 + 10*Math.sin(a)), -4 - 7*Math.max(0, Math.cos(a))]
+    : [sx, sx*1.9, -3 + Math.sin(T*2 + sx)];
+  let arms;
+  if (scooping || (k.state === 'carry' && k.item)){
+    let e = 1, rx = -7, ry = -33;                        // raised hand holding the krathong
+    if (scooping && k.t <= 0.5){ e = Math.min(1, k.t/0.3); rx = -9 - 9*e; ry = -2 - 2*(1 - e); }                 // reach out to the water
+    else if (scooping){ e = Math.min(1, (k.t - 0.5)/0.7); rx = -18 + 11*e; ry = -4 - 29*e; }                       // lift it overhead
+    arms = [[-6.5, rx, ry], k.state === 'carry' ? stroke(6.5, ph) : [6.5, 11, -2 + Math.sin(T*4)*1.2]];
+    if (k.state === 'carry') arms[0] = [-6.5, -8, -33];
+  } else {
+    arms = [stroke(-6.5, ph), stroke(6.5, ph + Math.PI)];
+    if (k.wave > 0) arms[1] = [6.5, 6.5 + Math.sin(T*9)*4, -33];
+  }
+  const raised = new Set();
+  arms.forEach((a, i) => { if (a[2] < -20) raised.add(i); });
+  for (let i = 0; i < 2; i++){
+    const a = arms[i];
+    ctx.strokeStyle = skin; ctx.lineWidth = 3.4*s; ctx.beginPath(); ctx.moveTo(x + a[0]*s, shY); ctx.lineTo(x + a[1]*s, y + a[2]*s + bob); ctx.stroke();
+    if (moving && !raised.has(i) && a[2] > -8){ ctx.fillStyle = 'rgba(230,240,245,.55)'; ell(ctx, x + a[1]*s, y - 3*s, 2.2*s, 1*s); ctx.fill(); }
+  }
+  // shoulders, head, hair, smile
+  ctx.fillStyle = k.shirt; rrect(ctx, x - 8*s, shY - 1*s, 16*s, 9*s, 4*s); ctx.fill();
+  ctx.fillStyle = skin; ell(ctx, x, y - 17*s + bob, 6.4*s, 6.8*s); ctx.fill();
+  ctx.fillStyle = '#1a1511'; ctx.beginPath(); ctx.arc(x, y - 18.5*s + bob, 6.8*s, Math.PI*1.02, Math.PI*1.98); ctx.fill();
+  if (k.style === 0){ ell(ctx, x, y - 27.6*s + bob, 2.6*s, 2.6*s); ctx.fill(); }                                      // top-knot (จุก)
+  else if (k.style === 1){ ell(ctx, x - 6.6*s, y - 16*s + bob, 2.4*s, 3*s); ctx.fill(); ell(ctx, x + 6.6*s, y - 16*s + bob, 2.4*s, 3*s); ctx.fill(); }   // pigtails
+  ctx.strokeStyle = 'rgba(30,18,12,.75)'; ctx.lineWidth = Math.max(0.8, 0.9*s); ctx.beginPath(); ctx.arc(x, y - 15.6*s + bob, 2.3*s, 0.2, Math.PI - 0.2); ctx.stroke();
+  if (holding){ ctx.strokeStyle = 'rgba(255,210,150,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y - 17*s + bob, 6.8*s, Math.PI*1.1, Math.PI*1.9); ctx.stroke(); }
+  // the water over the lower body
+  ctx.fillStyle = 'rgba(10,32,52,.55)'; ell(ctx, x, y - 1.5*s, 14*s, 4.6*s); ctx.fill();
+  // the krathong held up in the raised hand
   if (holding){
-    const it = k.item, own = it.craft ? craftImage(it.k) : null, ks = s*0.85;
-    ctx.save(); ctx.translate(x, y - 54*s + bob*0.4);
+    const hx = x + arms[0][1]*s, hy = y + arms[0][2]*s + bob, it = k.item, own = it.craft ? craftImage(it.k) : null, ks = s*0.8;
+    ctx.save(); ctx.translate(hx, hy - 4*s);
     if (own) ctx.drawImage(own, -30*ks, -52*ks, 60*ks, 60*ks); else drawBoatSprite(ctx, it.t, ks, k.seed);
     ctx.restore();
-    if (k.state === 'carry' && k.t < 2.6) chip(k.line, x, y - 112*s);
+    if (k.state === 'carry' && k.t < 2.6) chip(k.line, hx, hy - 58*s);
   }
   ctx.restore();
+  // speech while chatting with another child
+  if (k.say && nowMs >= k.say.t0 && nowMs < k.say.t1) bubble(k.say.text, x, y - 32*s);
 }
 function drawBoats(dt, now){
   updateKids(dt, now);
@@ -1702,12 +1831,20 @@ powerSave.addEventListener('change', () => {
   DPR = pixelRatio(); nextPaint = performance.now(); slowFor = 0;
   sprites.clear(); previewSprite = null; resize(); sizePreview();
 });
-const kidsToggle = $('#kidsToggle');
+const kidsToggle = $('#kidsToggle'), kidsNote = $('#kidsNote');
+function updateKidsNote(){
+  const hm = (d) => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  let t; try { t = nowSync(); } catch (e) { setTimeout(updateKidsNote, 500); return; }   // the clock helper is defined further down the script
+  const next = hm(nextKidRound(t));
+  kidsNote.textContent = !kidsOn ? 'ปิดอยู่' : kidsCollecting(t) ? 'ตอนนี้เป็นรอบเก็บกระทง · รอบถัดไป ' + next + ' น.' : 'เด็ก ๆ ว่ายน้ำเล่นรอ · รอบเก็บกระทงถัดไป ' + next + ' น.';
+}
+setTimeout(updateKidsNote, 0); setInterval(updateKidsNote, 30000);   // nowSync() is defined further down the script
 kidsToggle.checked = kidsOn;
 kidsToggle.addEventListener('change', () => {
   kidsOn = kidsToggle.checked;
   try { localStorage.setItem('e-kratong.kids', kidsOn ? 'on' : 'off'); } catch (e) {}
   if (!kidsOn) releaseKids();
+  updateKidsNote();
 });
 soundBtn.addEventListener('click', () => setSoundPanel(soundPanel.hidden));
 document.addEventListener('click', (e) => {

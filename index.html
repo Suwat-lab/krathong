@@ -1,0 +1,2616 @@
+<meta charset="utf-8">
+<title>E-Kratong</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600&display=swap">
+<style>
+:root{
+  /* Layout: a full-bleed night river is the working surface; everything after it sits in one 1120px column */
+  color-scheme: dark;
+  --night:#08131f;
+  --deep:#0d1d2c;
+  --line:#22405a;
+  --line-hi:#3a6283;
+  --moon:#f2ebdb;
+  --moon-dim:#cdd5d4;
+  --mist:#9fb2bf;
+  --leaf:#7aa65e;
+  --marigold:#f0a13c;
+  --candle:#ffd88a;
+  --ink:#1c1206;
+  --paper:#ffffff;
+  --ink-dark:#08131f;
+  --warn:#ffb4a8;
+  /* chart colours: categorical slots validated on this surface; one neutral for the single-series trend */
+  --chart-1:#3987e5; --chart-2:#d95926; --chart-3:#199e70; --chart-total:#8aa3b5;
+  --font-display:"Mitr","Kanit","Leelawadee UI",Tahoma,sans-serif;
+  --font-body:"IBM Plex Sans Thai Looped","Noto Sans Thai Looped","Leelawadee UI",Tahoma,sans-serif;
+  --fs-xs:.8125rem; --fs-sm:.9rem; --fs-base:1rem; --fs-md:1.125rem; --fs-lg:1.5rem;
+  --fs-xl:clamp(1.65rem,1.1rem + 1.9vw,2.4rem);
+  --fs-h3:clamp(1.3rem,1.1rem + .7vw,1.65rem);
+  --fs-hero:clamp(2.3rem,1.3rem + 3.6vw,3.8rem);
+  --radius:16px;
+  --col:1120px;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--night);color:var(--moon)}
+body{margin:0;font-family:var(--font-body);font-size:var(--fs-base);line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{width:100%;max-width:var(--col);margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:2px solid var(--candle);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- buttons ---------- */
+.btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:999px;border:1px solid var(--line);background:rgba(17,38,55,.8);color:var(--moon);font:500 var(--fs-sm)/1.25 var(--font-body);cursor:pointer;text-decoration:none;transition:background-color .2s,border-color .2s}
+.btn:hover{border-color:var(--line-hi);background:rgba(23,52,75,.92)}
+.btn:disabled{opacity:.6;cursor:progress}
+.btn-primary{background:var(--marigold);border-color:var(--marigold);color:var(--ink);font-weight:600}
+.btn-primary:hover{background:#f6b45c;border-color:#f6b45c}
+.btn-lg{min-height:54px;padding:12px 34px;font-size:var(--fs-md)}
+.btn-sm{min-height:38px;padding:6px 14px;font-size:var(--fs-xs)}
+.btn-quiet{background:transparent}
+
+/* ---------- river scene ---------- */
+.scene{position:relative;height:clamp(480px,80vh,780px);overflow:hidden;background:var(--night);isolation:isolate}
+#river{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer;touch-action:manipulation}
+.scene-ui{position:absolute;inset:0;display:flex;flex-direction:column;pointer-events:none}
+.scene-ui button,.scene-ui a{pointer-events:auto}
+.topbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px;padding-block:14px}
+.brand{font-weight:600;font-size:var(--fs-md);letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+.brand i{width:9px;height:9px;border-radius:50%;background:var(--marigold);box-shadow:0 0 12px 2px rgba(240,161,60,.6)}
+.countdown{font-size:var(--fs-xs);color:var(--candle);border:1px solid rgba(255,216,138,.32);background:rgba(8,19,31,.55);padding:4px 12px;border-radius:999px;line-height:1.5}
+.countdown .cd-date{color:var(--moon-dim)}
+.icon-btn{width:44px;height:44px;padding:0;border-radius:50%}
+.icon-btn svg{width:20px;height:20px}
+.top-tools{position:relative;z-index:8;display:flex;align-items:center;gap:8px;margin-left:auto}
+#soundBtn,#musicBtn{width:auto;padding-inline:10px;gap:6px;border-radius:999px;font-size:var(--fs-xs)}
+#musicBtn[aria-pressed="true"]{color:var(--candle);border-color:var(--candle)}
+.hero{padding-block:clamp(4px,3vh,32px) 0}
+.hero-inner{max-width:min(34rem,74%)}
+.eyebrow{margin:0;font-size:var(--fs-xs);letter-spacing:.04em;color:var(--candle)}
+h1{font-family:var(--font-display);font-weight:500;font-size:var(--fs-hero);line-height:1.45;margin:.4em 0 .1em;text-wrap:balance;text-shadow:0 2px 24px rgba(0,0,0,.45)}
+.lede{margin:0;color:var(--moon-dim);max-width:34ch;text-shadow:0 1px 12px rgba(0,0,0,.6)}
+.scene-bottom{margin-top:auto;background:linear-gradient(to top,rgba(5,13,22,.94) 35%,rgba(5,13,22,0));padding-block:44px 16px}
+.bottom-inner{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.stats{display:flex;gap:28px;margin:0}
+.stats div{display:flex;flex-direction:column}
+.stats dt{font-size:var(--fs-xs);color:var(--mist)}
+.stats dd{margin:0;font-size:var(--fs-lg);font-weight:600;font-variant-numeric:tabular-nums;line-height:1.3}
+.scene-actions{display:flex;flex-wrap:wrap;gap:8px}
+.status-line{flex-basis:100%;margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:var(--fs-xs);color:var(--mist)}
+.status-line .st{display:inline-flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mist);flex:none}
+.dot.on{background:var(--leaf);box-shadow:0 0 0 3px rgba(122,166,94,.25)}
+.empty{position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);margin:0;padding:10px 18px;border-radius:999px;background:rgba(8,19,31,.7);border:1px solid var(--line);color:var(--candle);font-size:var(--fs-sm);pointer-events:none;text-align:center;width:max-content;max-width:calc(100% - 32px)}
+@media (max-width:600px){
+  .scene{height:clamp(560px,88vh,760px)}
+  .scene-bottom{padding-block:28px 14px}
+  .countdown .cd-date{display:none}
+  #screenBtn{display:none}
+  .topbar{gap:6px 8px}
+  .top-tools{gap:6px}
+  #soundBtn{width:44px;padding:0}
+  #soundBtn span{display:none}
+  .scene-actions{width:100%}
+  .scene-actions .btn{flex:1 1 0}
+  #lanternBtn{display:none}
+  .hint-long{display:none}
+  .stats{gap:22px}
+}
+
+/* tapped-krathong card */
+.boat-card{position:absolute;left:50%;transform:translateX(-50%);bottom:150px;width:min(440px,calc(100% - 32px));background:rgba(11,26,40,.95);border:1px solid #2c4d69;border-radius:18px;padding:14px 16px 16px;z-index:5;box-shadow:0 16px 48px rgba(0,0,0,.5)}
+@media (min-width:900px){.boat-card{left:auto;right:max(24px,env(safe-area-inset-right,0px));transform:none;width:400px}}
+.bc-head{display:flex;align-items:center;gap:12px}
+.bc-head canvas{width:56px;height:48px;flex:none}
+.bc-head div{min-width:0}
+.bc-type{margin:0;font-weight:600;line-height:1.4}
+.bc-legend{margin:0;color:var(--mist);font-size:var(--fs-xs)}
+.close{margin-left:auto;flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--moon);font-size:1.25rem;line-height:1;cursor:pointer}
+.bc-wish{font-family:var(--font-display);font-size:1.2rem;line-height:1.6;margin:12px 0 4px;overflow-wrap:anywhere}
+.bc-wish.muted{font-family:var(--font-body);font-size:var(--fs-sm);color:var(--mist)}
+.bc-meta{margin:0 0 12px;color:var(--mist);font-size:var(--fs-xs);overflow-wrap:anywhere}
+.bc-actions{display:flex;flex-wrap:wrap;gap:8px}
+
+/* ---------- sections ---------- */
+main{display:flex;flex-direction:column;gap:clamp(72px,10vw,120px);padding-block:clamp(56px,8vw,96px)}
+.section-head{max-width:44rem;margin-bottom:32px}
+/* Display headings: Mitr. Thai stacked marks sit above the line box, so headings keep some room above */
+h2{font-family:var(--font-display);font-weight:500;font-size:var(--fs-xl);line-height:1.5;margin:.3em 0 .2em;text-wrap:balance}
+.section-head p:last-child{margin:0;color:var(--moon-dim)}
+h3{text-wrap:balance}
+
+/* maker */
+.maker-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(20px,4vw,48px);align-items:start}
+.preview{margin:0;position:sticky;top:24px;background:var(--deep);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+#preview{display:block;width:100%;max-width:100%;aspect-ratio:4/3}
+.preview figcaption{padding:16px 20px 20px;display:flex;flex-direction:column;gap:2px}
+.pv-name{font-family:var(--font-display);font-size:1.35rem;font-weight:500;line-height:1.55}
+.pv-legend{color:var(--mist);font-size:var(--fs-sm)}
+.pv-meaning{color:var(--candle);font-size:var(--fs-sm);margin-top:6px}
+.maker-form{display:flex;flex-direction:column;gap:30px;min-width:0}
+.step{border:0;margin:0;padding:0;min-width:0}
+.step legend,.step-label{display:flex;align-items:center;gap:12px;font-weight:600;font-size:var(--fs-md);margin:0 0 14px;padding:0}
+.num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;border:1px solid var(--marigold);color:var(--marigold);font-size:.9rem;font-weight:600;font-variant-numeric:tabular-nums;flex:none}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:1px solid var(--line);border-radius:14px;background:var(--deep);cursor:pointer;transition:border-color .2s,background-color .2s;min-width:0}
+.tile input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.tile canvas{width:100%;max-width:64px;height:auto;aspect-ratio:64/52}
+.tile span{font-size:var(--fs-xs);text-align:center;line-height:1.3}
+.tile:hover{border-color:var(--line-hi)}
+.tile.is-on{border-color:var(--marigold);background:#15283a;box-shadow:0 0 0 3px rgba(240,161,60,.18)}
+.tile:has(input:focus-visible){outline:2px solid var(--candle);outline-offset:3px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:var(--fs-sm);color:var(--moon-dim);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.count{font-size:var(--fs-xs);color:var(--mist);font-variant-numeric:tabular-nums}
+textarea,input[type="text"]{width:100%;font:inherit;color:var(--moon);background:var(--deep);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+textarea{resize:vertical;min-height:96px}
+textarea::placeholder,input::placeholder{color:#6f8796}
+textarea:focus,input[type="text"]:focus{border-color:var(--marigold);outline:none;box-shadow:0 0 0 3px rgba(240,161,60,.2)}
+.field-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 20px;align-items:end;margin-top:16px}
+.toggle{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:var(--fs-sm);min-height:50px}
+.toggle input{position:absolute;opacity:0;width:1px;height:1px}
+.track{width:44px;height:26px;border-radius:999px;background:#284660;position:relative;flex:none;transition:background-color .2s}
+.track::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--moon);transition:transform .2s}
+.toggle input:checked + .track{background:var(--leaf)}
+.toggle input:checked + .track::after{transform:translateX(18px)}
+.toggle input:focus-visible + .track{outline:2px solid var(--candle);outline-offset:3px}
+.letgo{margin-top:18px;border:1px dashed var(--line);border-radius:12px;padding:12px 14px}
+.letgo summary{cursor:pointer;font-size:var(--fs-sm);font-weight:500}
+.letgo .field{margin-top:10px}
+.note{font-size:var(--fs-xs);color:var(--mist);margin:4px 0 0}
+.opt{color:var(--mist);font-weight:400;font-size:var(--fs-xs)}
+.step-go{display:flex;align-items:center;gap:14px 16px;flex-wrap:wrap}
+.mode-note{flex:1 1 220px;margin:0;font-size:var(--fs-xs);color:var(--mist)}
+@media (max-width:860px){
+  .maker-grid{grid-template-columns:1fr}
+  .preview{position:static}
+  #preview{aspect-ratio:16/9}
+}
+@media (max-width:520px){
+  .tiles{gap:6px}
+  .tile{padding:8px 2px;border-radius:12px}
+  .field-row{grid-template-columns:1fr}
+}
+
+/* legends */
+.explorer{display:grid;grid-template-columns:minmax(0,290px) minmax(0,1fr);gap:clamp(20px,3vw,40px);align-items:start}
+.legend-tabs{display:flex;flex-direction:column;gap:6px}
+.legend-tabs button{appearance:none;display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:0;padding:12px 16px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--moon);font:inherit;cursor:pointer;transition:background-color .2s,border-color .2s}
+.legend-tabs button:hover{background:rgba(13,29,44,.7)}
+.legend-tabs button[aria-selected="true"]{background:var(--deep);border-color:var(--line)}
+.legend-tabs button[aria-selected="true"] .tab-title{color:var(--candle)}
+.tab-origin{font-size:var(--fs-xs);color:var(--mist)}
+.tab-title{font-weight:500;line-height:1.45}
+.legend-panel{background:var(--deep);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(20px,3vw,36px);display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:4px 28px;min-width:0}
+.lp-icon{grid-column:2;grid-row:1 / span 2;width:150px;height:120px;align-self:start}
+.lp-num{grid-column:1;margin:0;font-size:var(--fs-xs);color:var(--candle)}
+.legend-panel h3{grid-column:1;font-family:var(--font-display);font-weight:500;font-size:var(--fs-h3);line-height:1.5;margin:.2em 0 6px}
+.lp-story{grid-column:1 / -1;max-width:62ch}
+.lp-story p{margin:0 0 12px;color:var(--moon-dim)}
+.lp-meta{grid-column:1 / -1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px 28px;margin:10px 0 22px;padding-top:18px;border-top:1px solid var(--line)}
+.lp-meta dt{font-size:var(--fs-xs);color:var(--mist)}
+.lp-meta dd{margin:2px 0 0}
+.lp-meta .today dd{color:var(--candle)}
+.lp-go{grid-column:1 / -1;justify-self:start}
+@media (max-width:860px){
+  .explorer{grid-template-columns:1fr}
+  .legend-tabs{flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;margin-inline:-4px;padding-inline:4px}
+  .legend-tabs button{flex:none;scroll-snap-align:start;max-width:72vw}
+}
+@media (max-width:560px){
+  .legend-panel{grid-template-columns:minmax(0,1fr) 96px;gap:4px 14px}
+  .lp-icon{width:96px;height:77px}
+  .lp-meta{grid-template-columns:1fr}
+}
+
+/* why: river-waste data */
+.why-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(28px,4vw,56px);align-items:start}
+.hero-num{display:flex;align-items:baseline;gap:10px;margin:0}
+.num-big{font-weight:600;font-size:clamp(3rem,2rem + 4vw,5rem);line-height:1.15;font-variant-numeric:tabular-nums}
+.num-unit{font-size:var(--fs-lg);color:var(--moon-dim)}
+.num-cap{margin:6px 0 28px;color:var(--moon-dim);max-width:52ch}
+.chart{margin:0 0 26px}
+.chart-title{display:block;font-weight:600;font-size:var(--fs-sm);margin-bottom:10px}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:grid;grid-template-columns:3rem minmax(0,1fr);align-items:center;gap:10px;font-size:var(--fs-sm)}
+.bar-row .yr{color:var(--mist);font-variant-numeric:tabular-nums}
+.bar-track{display:flex;align-items:center;gap:10px;min-width:0;height:28px}
+.bar{height:100%;background:var(--chart-total);border-radius:0 4px 4px 0;flex:none}
+.bar-val{font-variant-numeric:tabular-nums;white-space:nowrap}
+.stack{display:flex;height:30px;gap:2px}
+.seg{height:100%;min-width:3px}
+.seg:first-child{border-radius:4px 0 0 4px}.seg:last-child{border-radius:0 4px 4px 0}
+.bar:focus-visible,.seg:focus-visible{outline:2px solid var(--candle);outline-offset:2px}
+.legend{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-wrap:wrap;gap:6px 20px;font-size:var(--fs-sm)}
+.legend li{display:flex;align-items:center;gap:8px}
+.legend i{width:10px;height:10px;border-radius:2px;flex:none}
+.legend span{color:var(--mist);font-variant-numeric:tabular-nums}
+.viz-tip{position:fixed;z-index:60;pointer-events:none;background:#0b1a28;border:1px solid #2c4d69;border-radius:8px;padding:6px 10px;font-size:var(--fs-xs);line-height:1.5;color:var(--moon);box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:240px}
+.table-view{margin:0 0 14px;font-size:var(--fs-sm)}
+.table-view summary{cursor:pointer;color:var(--moon-dim)}
+.table-wrap{overflow-x:auto;margin-top:10px}
+.table-view table{border-collapse:collapse;min-width:100%}
+.table-view th,.table-view td{text-align:left;padding:6px 12px 6px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.table-view th{color:var(--mist);font-weight:500}
+.source{font-size:var(--fs-xs);color:var(--mist);margin:0;max-width:72ch}
+.source a{color:var(--candle)}
+.effort{border-top:1px solid var(--line);padding-top:16px;margin-bottom:24px}
+.effort-list{list-style:none;padding:0;margin:10px 0 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;font-size:var(--fs-xs);color:var(--moon-dim)}
+.effort-list strong{display:block;font-size:var(--fs-lg);line-height:1.3;color:var(--moon);font-variant-numeric:tabular-nums}
+.effort > p:last-child{margin:0;color:var(--moon-dim);font-size:var(--fs-sm)}
+.online-note{background:rgba(122,166,94,.1);border:1px solid rgba(122,166,94,.4);border-radius:var(--radius);padding:16px 18px;margin-bottom:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.online-note p{margin:0}
+.online-note strong{font-size:var(--fs-lg);font-variant-numeric:tabular-nums}
+@media (max-width:860px){.why-grid{grid-template-columns:1fr}}
+
+/* history timeline (a real sequence, so it is numbered by position) */
+.timeline{list-style:none;padding:0;margin:0 0 18px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px;position:relative}
+.timeline::before{content:"";position:absolute;left:0;right:0;top:9px;height:1px;background:var(--line)}
+.timeline li{position:relative;padding-top:30px;min-width:0}
+.timeline li::before{content:"";position:absolute;top:4px;left:0;width:11px;height:11px;border-radius:50%;background:var(--night);border:2px solid var(--line-hi)}
+.timeline .tl-now::before{background:var(--marigold);border-color:var(--marigold);box-shadow:0 0 12px rgba(240,161,60,.6)}
+.tl-when{font-size:var(--fs-xs);color:var(--candle)}
+.timeline h3{font-size:var(--fs-md);line-height:1.5;margin:2px 0 6px;font-weight:600}
+.timeline p{margin:0;color:var(--moon-dim);font-size:var(--fs-sm)}
+@media (max-width:980px){
+  .timeline{grid-template-columns:1fr;gap:22px;padding-left:26px}
+  .timeline::before{left:5px;right:auto;top:6px;bottom:6px;width:1px;height:auto}
+  .timeline li{padding-top:0}
+  .timeline li::before{left:-26px;top:6px}
+}
+
+/* regions and neighbours */
+.regions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.region{background:var(--deep);border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px 20px;min-width:0}
+.region h3,.neighbors h3,.lantern-strip h3,.pledge-box h3{font-family:var(--font-display);font-weight:500;font-size:var(--fs-h3);line-height:1.5;margin:.2em 0 6px}
+.region ul,.neighbors ul{margin:0;padding-left:1.1em;color:var(--moon-dim);display:flex;flex-direction:column;gap:8px}
+.region b,.neighbors b{color:var(--moon);font-weight:600}
+.neighbors{margin-top:32px}
+.lantern-strip p{color:var(--moon-dim);margin:0 0 14px;max-width:68ch}
+.pledge-box > p{color:var(--moon-dim);margin:0 0 4px}
+@media (max-width:760px){.regions{grid-template-columns:1fr}}
+.pledge-box{background:var(--deep);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(20px,3vw,32px);min-width:0}
+.pledges{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.pledge{appearance:none;min-height:44px;padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--moon);font:inherit;font-size:var(--fs-sm);line-height:1.4;cursor:pointer;text-align:left;transition:background-color .2s,border-color .2s}
+.pledge:hover{border-color:var(--line-hi)}
+.pledge[aria-pressed="true"]{background:rgba(122,166,94,.16);border-color:var(--leaf);color:#dcebcf}
+.pledge[aria-pressed="true"]::before{content:"✓";margin-right:8px;color:var(--leaf);font-weight:600}
+.pledge-count{margin:0;font-size:var(--fs-sm);color:var(--mist)}
+.pledge-count strong{color:var(--moon);font-variant-numeric:tabular-nums;font-size:var(--fs-md)}
+
+/* closing + footer */
+.closing blockquote{font-family:var(--font-display);font-weight:500;font-size:var(--fs-xl);line-height:1.55;margin:.35em 0 .4em;max-width:24ch;text-wrap:balance}
+.closing p{color:var(--moon-dim);max-width:62ch;margin:0}
+footer{border-top:1px solid var(--line);padding-block:32px 56px;color:var(--mist);font-size:var(--fs-xs)}
+footer p{margin:0 0 10px;max-width:72ch}
+footer a{color:var(--candle)}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(560px,calc(100% - 32px));background:#132b3e;border:1px solid #2c4d69;border-radius:16px;padding:12px 14px 12px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;z-index:50;box-shadow:0 12px 40px rgba(0,0,0,.45)}
+.toast p{margin:0;flex:1 1 220px;font-size:var(--fs-sm)}
+.toast-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* sound panel */
+.sound-panel{position:absolute;top:calc(100% + 8px);right:0;width:min(320px,calc(100vw - 32px));background:rgba(11,26,40,.97);border:1px solid #2c4d69;border-radius:16px;padding:8px 16px 14px;display:flex;flex-direction:column;gap:2px;box-shadow:0 16px 48px rgba(0,0,0,.5);pointer-events:auto}
+.sound-panel .toggle{min-height:48px;line-height:1.4}
+#musicName{overflow-wrap:anywhere}
+.file-pick{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:6px 14px;margin:6px 0 4px;border:1px dashed var(--line-hi);border-radius:999px;font-size:var(--fs-xs);cursor:pointer;color:var(--moon)}
+.file-pick:hover{border-style:solid}
+.file-pick{position:relative}
+.file-pick:focus-within{outline:2px solid var(--candle);outline-offset:2px}
+
+/* sample wishes, filter message, blessings, report */
+.samples{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.sample{appearance:none;border:1px dashed var(--line-hi);background:transparent;color:var(--moon-dim);font:inherit;font-size:var(--fs-xs);line-height:1.4;padding:6px 12px;border-radius:999px;cursor:pointer;min-height:34px;text-align:left}
+.sample:hover{border-style:solid;color:var(--moon)}
+.field-error{margin:8px 0 0;color:var(--warn);font-size:var(--fs-sm)}
+.bc-bless{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:0 0 12px;font-size:var(--fs-xs);color:var(--candle)}
+.bc-foot{display:flex;justify-content:space-between;gap:12px;margin-top:10px;padding-top:6px;border-top:1px solid var(--line)}
+.link-btn{appearance:none;background:none;border:0;color:var(--mist);font:inherit;font-size:var(--fs-xs);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px 0;min-height:32px}
+.link-btn:hover{color:var(--moon)}
+
+/* synchronized lantern moment */
+.moment{color:var(--candle);font-weight:500;font-variant-numeric:tabular-nums}
+.moment-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;pointer-events:none;z-index:6;text-align:center;padding-inline:16px;background:radial-gradient(ellipse at 50% 40%,rgba(8,19,31,.55),rgba(8,19,31,0) 60%)}
+.mo-label{margin:0;font-size:clamp(1rem,.8rem + 1vw,1.6rem);color:var(--moon-dim)}
+.mo-num{margin:0;font-family:var(--font-display);font-weight:600;font-size:clamp(5rem,16vw,12rem);line-height:1.1;color:var(--candle);text-shadow:0 0 40px rgba(255,190,110,.55);font-variant-numeric:tabular-nums}
+.moment-overlay.done .mo-num{font-size:clamp(2.4rem,7vw,5.5rem)}
+.scene.moment-on .spotlight,.scene.moment-on .hero-inner,.scene.moment-on .boat-card{visibility:hidden}
+
+/* big-screen mode (#screen) */
+.qr-panel,.screen-tools{display:none}
+.spotlight{position:absolute;left:50%;top:46%;transform:translate(-50%,-100%);width:min(900px,calc(100% - 32px));background:rgba(8,19,31,.8);border:1px solid #2c4d69;border-radius:24px;padding:18px 28px 20px;z-index:4;pointer-events:none;text-align:center}
+.spotlight.in{animation:spot-in .6s ease-out}
+@keyframes spot-in{from{opacity:.2;transform:translate(-50%,calc(-100% + 14px))}to{opacity:1;transform:translate(-50%,-100%)}}
+.sp-wish{margin:0;padding-top:.1em;font-family:var(--font-display);font-size:clamp(1.5rem,.9rem + 2vw,2.8rem);line-height:1.55;overflow-wrap:anywhere}
+.sp-meta{margin:6px 0 0;color:var(--candle);font-size:clamp(.95rem,.8rem + .5vw,1.3rem)}
+.screen-mode,.screen-mode body{overflow:hidden}
+.screen-mode main,.screen-mode footer,.screen-mode .toast{display:none!important}
+.screen-mode .scene{position:fixed;inset:0;height:auto;z-index:20}
+.screen-mode .lede,.screen-mode .scene-actions,.screen-mode .hint-long,.screen-mode #screenBtn{display:none}
+.screen-mode .hero-inner{max-width:min(40rem,60%);transition:opacity .5s}
+.screen-mode .spot-on .hero-inner{opacity:0}
+.screen-mode h1{font-size:clamp(2.4rem,1.6rem + 2.6vw,4.4rem)}
+.screen-mode .stats{gap:40px}
+.screen-mode .stats dd{font-size:clamp(1.8rem,1.2rem + 1.4vw,2.8rem)}
+.screen-mode .stats dt,.screen-mode .status-line{font-size:var(--fs-base)}
+.screen-mode .scene-bottom{padding-right:calc(clamp(200px,18vw,300px) + 48px)}
+.screen-mode .qr-panel{display:flex;flex-direction:column;align-items:center;gap:6px;position:absolute;right:max(24px,env(safe-area-inset-right,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));width:clamp(200px,18vw,300px);background:var(--paper);color:var(--ink-dark);border-radius:20px;padding:16px 16px 12px;z-index:5;box-shadow:0 16px 48px rgba(0,0,0,.45)}
+.qr-panel canvas{width:100%;height:auto;aspect-ratio:1;image-rendering:pixelated}
+.qr-title{margin:4px 0 0;font-weight:600;font-size:clamp(1rem,.8rem + .6vw,1.35rem);text-align:center}
+.qr-url{margin:0;font-size:var(--fs-xs);text-align:center;word-break:break-all;color:#2f4a5e}
+.qr-edit{display:flex;flex-direction:column;gap:6px;width:100%}
+.qr-edit label{font-size:var(--fs-xs)}
+.qr-edit input{width:100%;font:inherit;font-size:var(--fs-xs);padding:8px 10px;border-radius:8px;border:1px solid #9fb2bf;color:var(--ink-dark);background:var(--paper)}
+.qr-change{appearance:none;background:none;border:0;color:#2f4a5e;font:inherit;font-size:var(--fs-xs);text-decoration:underline;cursor:pointer;padding:4px}
+.screen-mode .screen-tools{display:flex;gap:8px;position:absolute;right:max(24px,env(safe-area-inset-right,0px));top:calc(16px + env(safe-area-inset-top,0px));z-index:7;opacity:.35;transition:opacity .2s}
+.screen-mode .screen-tools:hover,.screen-mode .screen-tools:focus-within{opacity:1}
+.screen-mode .topbar{padding-right:min(46vw,520px)}
+@media (max-width:700px){
+  .screen-mode .qr-panel{width:150px;padding:10px}
+  .screen-mode .scene-bottom{padding-right:180px}
+  .screen-mode .topbar{padding-right:16px;padding-top:64px}
+}
+
+/* Narrow screens wrap display headings onto several lines: give stacked Thai marks room between lines */
+@media (max-width:600px){h2,.legend-panel h3{line-height:1.6}}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div lang="th">
+<section class="scene" id="scene" aria-label="สายน้ำลอยกระทง">
+  <canvas id="river" role="img" aria-label="แม่น้ำยามค่ำคืนใต้พระจันทร์เต็มดวง มีกระทงที่ผู้คนลอยไว้ค่อย ๆ ลอยไปตามน้ำ"></canvas>
+  <div class="scene-ui">
+    <div class="wrap topbar">
+      <span class="brand"><i aria-hidden="true"></i>E-Kratong</span>
+      <span class="countdown" id="countdown"><span class="cd-main">ลอยกระทง 2569</span></span>
+      <div class="top-tools">
+        <button class="btn icon-btn" id="screenBtn" type="button" aria-label="เปิดโหมดจอใหญ่" title="โหมดจอใหญ่สำหรับงานอีเวนต์"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg></button>
+        <button class="btn icon-btn" id="musicBtn" type="button" aria-pressed="false" aria-describedby="musicName"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17V6l11-3v11M9 9l11-3"/><ellipse cx="6" cy="18" rx="3" ry="2.5"/><ellipse cx="17" cy="15" rx="3" ry="2.5"/></svg><span id="musicAction">เปิดเพลง</span></button>
+        <button class="btn icon-btn" id="soundBtn" type="button" aria-expanded="false" aria-controls="soundPanel" aria-label="ตั้งค่าภาพและเสียง" title="ตั้งค่าภาพและเสียง"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 7h4m4 0h10M3 17h10m4 0h4"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg><span>ตั้งค่า</span></button>
+        <div class="sound-panel" id="soundPanel" hidden role="group" aria-label="ตั้งค่าภาพและเสียง">
+          <label class="toggle" for="powerSave"><input type="checkbox" id="powerSave"><span class="track" aria-hidden="true"></span><span>ประหยัดแบต<br><span class="opt">ลดความละเอียดและจำกัดภาพเคลื่อนไหวที่ 30 เฟรม/วินาที</span></span></label>
+          <label class="toggle" for="sndMusic"><input type="checkbox" id="sndMusic"><span class="track" aria-hidden="true"></span><span>เพลงประกอบ<br><span class="opt" id="musicName">Riverbound Lights · ลอยกระทง 2569</span></span></label>
+          <label class="file-pick">เลือกไฟล์เพลงจากเครื่องนี้<input type="file" id="musicFile" accept="audio/*" class="sr"></label>
+          <button class="btn btn-sm btn-quiet" type="button" id="resetMusic" hidden>กลับไปใช้เพลงของงาน</button>
+        </div>
+      </div>
+    </div>
+    <div class="wrap hero">
+      <div class="hero-inner">
+        <p class="eyebrow">คืนเพ็ญเดือนสิบสอง · ขึ้น 15 ค่ำ · แตะฟ้าเพื่อปล่อยโคม</p>
+        <h1>ลอยใจไปกับสายน้ำ</h1>
+        <p class="lede">ลอยกระทงออนไลน์ เพื่อลดขยะในแม่น้ำ เลือกกระทงจากห้าตำนาน เขียนคำอธิษฐาน แล้วลอยไปพร้อมกับทุกคน โดยไม่มีขยะลงน้ำสักชิ้น</p>
+      </div>
+    </div>
+    <div class="scene-bottom" id="sceneBottom">
+      <div class="wrap bottom-inner">
+        <dl class="stats">
+          <div><dt>กระทงในสายน้ำ</dt><dd id="statCount">0</dd></div>
+          <div><dt>ขยะลงแม่น้ำ</dt><dd>0 ชิ้น</dd></div>
+          <div id="onlineStat" hidden><dt>ออนไลน์ตอนนี้</dt><dd id="statOnline">0</dd></div>
+        </dl>
+        <div class="scene-actions">
+          <button class="btn" type="button" id="lanternBtn">ปล่อยโคม</button>
+          <button class="btn" type="button" id="readBtn">อ่านคำอธิษฐาน</button>
+          <button class="btn btn-primary" type="button" id="goMaker">ลอยกระทงของคุณ</button>
+          <a class="btn" id="workshopLink" href="workshop.html" hidden>ทำกระทงกับเพื่อน บนแผนที่ไทย</a>
+        </div>
+        <p class="status-line">
+          <span class="st"><span class="dot" id="statusDot"></span><span id="statusText">กำลังเชื่อมต่อสายน้ำ…</span></span>
+          <span class="moment" id="momentPill" hidden></span>
+          <span class="hint-long">แตะท้องฟ้าเพื่อปล่อยโคม · แตะกระทงเพื่ออ่านคำอธิษฐาน</span>
+        </p>
+      </div>
+    </div>
+  </div>
+  <p class="empty" id="empty" hidden>สายน้ำยังว่างอยู่ ลอยกระทงใบแรกของคืนนี้ได้เลย</p>
+  <audio id="festivalPlayer" loop preload="none"></audio>
+  <div class="moment-overlay" id="momentOverlay" hidden aria-live="assertive">
+    <p class="mo-label" id="moLabel">ปล่อยโคมพร้อมกันใน</p>
+    <p class="mo-num" id="moNum">10</p>
+  </div>
+  <div class="spotlight" id="spotlight" hidden aria-live="polite">
+    <p class="sp-wish" id="spWish"></p>
+    <p class="sp-meta" id="spMeta"></p>
+  </div>
+  <aside class="qr-panel" id="qrPanel" aria-label="สแกนเพื่อลอยกระทง">
+    <canvas id="qrCanvas" width="360" height="360" aria-hidden="true"></canvas>
+    <p class="qr-title">สแกนเพื่อลอยกระทง</p>
+    <p class="qr-url" id="qrUrl"></p>
+    <div class="qr-edit" id="qrEdit" hidden>
+      <label for="qrInput">ลิงก์ที่จะให้คนในงานสแกน</label>
+      <input type="text" id="qrInput" placeholder="https://…" autocomplete="off">
+      <button class="btn btn-sm btn-primary" type="button" id="qrSave">สร้าง QR</button>
+    </div>
+    <button class="qr-change" type="button" id="qrChange">แก้ลิงก์</button>
+  </aside>
+  <div class="screen-tools" id="screenTools">
+    <button class="btn btn-sm" type="button" id="momentNow" hidden>นับถอยหลังปล่อยโคมเดี๋ยวนี้</button>
+    <button class="btn btn-sm" type="button" id="fullBtn">เต็มจอ</button>
+    <button class="btn btn-sm" type="button" id="exitScreen">ออกจากโหมดจอใหญ่</button>
+  </div>
+  <aside class="boat-card" id="boatCard" hidden aria-live="polite">
+    <div class="bc-head">
+      <canvas id="bcIcon" aria-hidden="true"></canvas>
+      <div><p class="bc-type" id="bcType"></p><p class="bc-legend" id="bcLegend"></p></div>
+      <button class="close" type="button" id="bcClose" aria-label="ปิด">×</button>
+    </div>
+    <p class="bc-wish" id="bcWish"></p>
+    <p class="bc-meta" id="bcMeta"></p>
+    <div class="bc-bless">
+      <button class="btn btn-sm btn-primary" type="button" id="bcBless">ส่งพร</button>
+      <span id="bcBlessCount"></span>
+    </div>
+    <div class="bc-actions">
+      <button class="btn btn-sm" type="button" id="bcNext">อ่านใบถัดไป</button>
+      <button class="btn btn-sm" type="button" id="bcLegendBtn">อ่านตำนานนี้</button>
+    </div>
+    <div class="bc-foot">
+      <button class="link-btn" type="button" id="bcReport">แจ้งว่าไม่เหมาะสม</button>
+      <button class="link-btn" type="button" id="bcRemove" hidden>เก็บกระทงออก</button>
+    </div>
+  </aside>
+</section>
+
+<main>
+  <section class="wrap" id="maker" aria-labelledby="makerTitle">
+    <div class="section-head">
+      <p class="eyebrow">ลอยกระทงของคุณ</p>
+      <h2 id="makerTitle">เลือก เขียน แล้วลอย</h2>
+      <p>สามขั้นตอน ใช้เวลาไม่ถึงนาที กระทงทุกแบบมาจากตำนานจริงของวันลอยกระทง</p>
+    </div>
+    <div class="maker-grid">
+      <figure class="preview">
+        <canvas id="preview" aria-hidden="true"></canvas>
+        <figcaption>
+          <span class="pv-name" id="pvName"></span>
+          <span class="pv-legend" id="pvLegend"></span>
+          <span class="pv-meaning" id="pvMeaning"></span>
+        </figcaption>
+      </figure>
+      <form id="makerForm" class="maker-form" novalidate>
+        <fieldset class="step">
+          <legend><span class="num">1</span>เลือกกระทงจากตำนาน</legend>
+          <div class="tiles" id="tiles"></div>
+        </fieldset>
+        <fieldset class="step">
+          <legend><span class="num">2</span>เขียนคำอธิษฐาน</legend>
+          <div class="field">
+            <label for="wish">คำอธิษฐาน <span class="count" id="wishCount">0/140</span></label>
+            <textarea id="wish" rows="3"></textarea>
+            <div class="samples" id="samples" aria-label="ตัวอย่างคำอธิษฐาน แตะเพื่อใช้"></div>
+            <p class="field-error" id="wishError" role="alert" hidden></p>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="nick">ชื่อที่แสดง <span class="opt">ไม่ใส่ก็ได้</span></label>
+              <input type="text" id="nick" autocomplete="nickname" placeholder="ไม่ระบุชื่อ">
+            </div>
+            <label class="toggle" for="share"><input type="checkbox" id="share" checked><span class="track" aria-hidden="true"></span><span>ให้คนอื่นอ่านคำอธิษฐานนี้ได้</span></label>
+          </div>
+          <details class="letgo" id="letgo">
+            <summary>ลอยทุกข์ไปด้วย <span class="opt">ไม่บังคับ</span></summary>
+            <div class="field">
+              <label for="worry">เรื่องที่อยากปล่อยวาง</label>
+              <input type="text" id="worry" placeholder="เช่น ความกังวลเรื่องสอบ">
+              <p class="note">ข้อความจะกลายเป็นเงาตัวหนังสือจาง ๆ ไหลไปกับสายน้ำแล้วหายไป ระบบไม่บันทึกไว้ที่ใดเลย ตามคติสะเดาะเคราะห์ของการลอยกระทง</p>
+            </div>
+          </details>
+        </fieldset>
+        <div class="step step-go">
+          <span class="num" aria-hidden="true">3</span>
+          <button type="submit" class="btn btn-primary btn-lg" id="launchBtn">ลอยกระทง</button>
+          <p class="mode-note" id="modeNote">กำลังเชื่อมต่อสายน้ำ…</p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="wrap" id="history" aria-labelledby="historyTitle">
+    <div class="section-head">
+      <p class="eyebrow">ความหมายของประเพณี</p>
+      <h2 id="historyTitle">ขอบคุณสายน้ำ และลอยเคราะห์ไปกับน้ำ</h2>
+      <p>ลอยกระทงตรงกับวันขึ้น 15 ค่ำ เดือน 12 ราวเดือนพฤศจิกายน บางปีตรงกับตุลาคม ผู้คนลอยกระทงเพื่อขอขมาพระแม่คงคาและสะเดาะเคราะห์ บางหลักฐานว่าเป็นการบูชารอยพระพุทธบาทที่ริมแม่น้ำนัมมทา หรือบูชาพระอุปคุต ปีนี้ตรงกับวันอังคารที่ 24 พฤศจิกายน 2569</p>
+    </div>
+    <ol class="timeline">
+      <li><span class="tl-when">เดิมที</span><h3>พิธีของพราหมณ์</h3><p>รัชกาลที่ 5 ทรงสันนิษฐานว่าเดิมเป็นพิธีบูชาพระอิศวร พระนารายณ์ และพระพรหม ต่อมาชาวพุทธปรับเป็นการชักโคมบูชาพระจุฬามณี และลอยโคมบูชารอยพระพุทธบาท</p></li>
+      <li><span class="tl-when">ตำนานสมัยสุโขทัย</span><h3>นางนพมาศกับโคมดอกบัว</h3><p>ตำนานเล่าว่านางนพมาศหรือท้าวศรีจุฬาลักษณ์ประดิษฐ์กระทงรูปดอกบัว แทนการลอยประทีปในพิธีจองเปรียง เรื่องนี้ยังไม่มีหลักฐานยืนยัน</p></li>
+      <li><span class="tl-when">รัชกาลที่ 1</span><h3>หลักฐานที่เก่าที่สุด</h3><p>ภาพจิตรกรรมการทำกระทงแบบต่าง ๆ สมัยรัตนโกสินทร์ตอนต้น ทำให้เชื่อว่าประเพณีแบบที่เห็นทุกวันนี้ไม่น่าเก่ากว่านั้น</p></li>
+      <li><span class="tl-when">รัชกาลที่ 2</span><h3>จากดอกบัวสู่ใบตอง</h3><p>ดอกบัวหายาก จึงเปลี่ยนมาใช้ต้นกล้วย แล้วพับใบตองประดับให้สวย กลายเป็นกระทงใบตองที่สืบทอดมาถึงปัจจุบัน</p></li>
+      <li class="tl-now"><span class="tl-when">วันนี้</span><h3>ลอยออนไลน์ ไม่มีขยะ</h3><p>ความหมายเดิมยังอยู่ครบ ขอบคุณสายน้ำและปล่อยวางเรื่องหนักใจ เพียงย้ายกระทงมาลอยบนจอ ให้แม่น้ำสะอาดจริง</p></li>
+    </ol>
+    <p class="source">เรียบเรียงจาก <a href="https://th.wikipedia.org/wiki/%E0%B8%A5%E0%B8%AD%E0%B8%A2%E0%B8%81%E0%B8%A3%E0%B8%B0%E0%B8%97%E0%B8%87" target="_blank" rel="noopener">วิกิพีเดีย: ลอยกระทง</a></p>
+  </section>
+
+  <section class="wrap" id="legends" aria-labelledby="legendsTitle">
+    <div class="section-head">
+      <p class="eyebrow">ที่มาของกระทงห้าแบบ</p>
+      <h2 id="legendsTitle">ห้าตำนาน ห้าความหมาย</h2>
+      <p>ลอยกระทงไม่ได้มีต้นเรื่องเดียว แต่ละถิ่นเล่าต่างกัน E-Kratong จึงเปลี่ยนแต่ละตำนานเป็นกระทงหนึ่งแบบ พร้อมความหมายที่ใช้ได้ในชีวิตวันนี้</p>
+    </div>
+    <div class="explorer">
+      <div class="legend-tabs" role="tablist" aria-label="เลือกตำนาน" id="legendTabs"></div>
+      <article class="legend-panel" role="tabpanel" id="legendPanel" tabindex="0">
+        <canvas class="lp-icon" id="lpIcon" aria-hidden="true"></canvas>
+        <p class="lp-num" id="lpNum"></p>
+        <h3 id="lpTitle"></h3>
+        <div class="lp-story" id="lpStory"></div>
+        <dl class="lp-meta">
+          <div><dt>สิ่งที่ผู้คนบูชา</dt><dd id="lpHonored"></dd></div>
+          <div class="today"><dt>ความหมายในวันนี้</dt><dd id="lpToday"></dd></div>
+        </dl>
+        <button class="btn btn-primary lp-go" type="button" id="lpGo">ลอยกระทงแบบนี้</button>
+      </article>
+    </div>
+  </section>
+
+  <section class="wrap" id="regions" aria-labelledby="regionsTitle">
+    <div class="section-head">
+      <p class="eyebrow">ลอยกระทงทั่วไทย</p>
+      <h2 id="regionsTitle">แต่ละถิ่น ลอยไม่เหมือนกัน</h2>
+    </div>
+    <div class="regions">
+      <article class="region">
+        <h3>ภาคเหนือ</h3>
+        <ul>
+          <li><b>ยี่เป็ง เชียงใหม่</b> ปล่อยโคมลอยหรือ "ว่าวไฟ" ขึ้นเต็มฟ้า ยี่เป็งคือเพ็ญเดือนยี่ของล้านนา ตรงกับเพ็ญเดือนสิบสองแบบไทย</li>
+          <li><b>กระทงสาย ตาก</b> ลอยกระทงเล็ก ๆ ทยอยเรียงกันไปเป็นสายยาว</li>
+        </ul>
+      </article>
+      <article class="region">
+        <h3>ภาคกลาง</h3>
+        <ul>
+          <li><b>สุโขทัย</b> ขบวนแห่โคม ชักโคมแขวน เล่นพลุตะไลและไฟพะเนียง</li>
+          <li><b>พระนครศรีอยุธยา</b> ลอยกระทงกรุงเก่าในอุทยานประวัติศาสตร์ พร้อมแสงสีเสียง</li>
+          <li><b>กรุงเทพฯ</b> งานภูเขาทอง งานวัดราว 7 ถึง 10 วันช่วงลอยกระทง</li>
+        </ul>
+      </article>
+      <article class="region">
+        <h3>ภาคอีสาน</h3>
+        <ul>
+          <li>แต่เดิมเรียกว่า <b>สิบสองเพ็ง</b> คือวันเพ็ญเดือนสิบสอง</li>
+          <li><b>ร้อยเอ็ด</b> งาน "สมมาน้ำคืนเพ็ง เส็งประทีป" ขอขมาพระแม่คงคาที่บึงพลาญชัย</li>
+          <li><b>สกลนคร</b> ลอยพระประทีปที่ทำจากกาบกล้วย แบบเดียวกับปราสาทผึ้งโบราณ</li>
+        </ul>
+      </article>
+      <article class="region">
+        <h3>ภาคใต้</h3>
+        <ul>
+          <li><b>หาดใหญ่ สงขลา</b> จัดงานลอยกระทงอย่างยิ่งใหญ่ และอีกหลายจังหวัดก็จัดเช่นกัน</li>
+          <li>แต่ละท้องถิ่นยังมีธรรมเนียมของตัวเอง ที่สืบทอดต่อกันมา</li>
+        </ul>
+      </article>
+    </div>
+    <div class="neighbors">
+      <h3>เพื่อนบ้านก็ลอย</h3>
+      <ul>
+        <li><b>ลาว</b> ลอยในวันออกพรรษา ขึ้น 15 ค่ำ เดือน 11 ในงานไหลเฮือไฟ</li>
+        <li><b>กัมพูชา</b> ลอยสองครั้ง กลางเดือน 11 และกลางเดือน 12 ใส่อาหารลงในกระทงเพื่อส่งบุญให้เปรต และมีแข่งเรือยาวกับดอกไม้ไฟในเทศกาลน้ำ</li>
+        <li><b>เมียนมา</b> ทำกระทงรูปดอกบัวบาน ใส่เล็บ เส้นผม หรือเหรียญลงไป แล้วลอยไปเพื่อลอยเคราะห์ คล้ายช่อง "ลอยทุกข์" ของ E-Kratong</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap lantern-strip" aria-label="โคมลอย ว่าวไฟ">
+    <div>
+      <p class="eyebrow">โคมลอย · ว่าวไฟ</p>
+      <h3>ปล่อยโคมบูชาพระเกศแก้วจุฬามณี</h3>
+      <p>เมื่อเสด็จออกบรรพชาริมแม่น้ำอโนมา พระพุทธเจ้าทรงตัดพระเกศแล้วอธิษฐานให้ลอยขึ้นฟ้า พระอินทร์นำไปประดิษฐานในจุฬามณีเจดีย์บนสวรรค์ชั้นดาวดึงส์ ทางภาคเหนือจึงปล่อยโคมลอยที่เรียกว่า "ว่าวไฟ" ขึ้นไปบูชา</p>
+      <p>ที่นี่แตะท้องฟ้าเพื่อปล่อยโคมได้ทันที ไม่มีไฟ ไม่มีโครงลวดตกค้าง และไม่รบกวนเส้นทางการบิน</p>
+      <button class="btn" type="button" id="lanternBtn2">ปล่อยโคมหนึ่งดวง</button>
+    </div>
+  </section>
+
+  <section class="wrap closing" aria-label="แก่นของทุกตำนาน">
+    <p class="eyebrow">แก่นของทุกตำนาน</p>
+    <blockquote>ไม่ว่าจะเล่าแบบไหน ลอยกระทงคือการบอกขอบคุณ</blockquote>
+    <p>ขอบคุณพระพุทธเจ้า เทพเจ้า พระแม่คงคา และบรรพชน ซึ่งคนไทยเรียกว่าความกตัญญูกตเวที ส่วนรอยพระพุทธบาทที่ผู้คนลอยกระทงไปบูชา ก็เป็นคติให้เดินตามรอยความดี</p>
+  </section>
+
+  <section class="wrap" id="why" aria-labelledby="whyTitle">
+    <div class="section-head">
+      <p class="eyebrow">ทำไมต้องลอยกระทงออนไลน์</p>
+      <h2 id="whyTitle">ลอยได้เหมือนเดิม แต่ไม่มีขยะลงแม่น้ำ</h2>
+      <p>E-Kratong ทำขึ้นเพื่อลดขยะในแม่น้ำลำคลอง หลังคืนลอยกระทงทุกปี เจ้าหน้าที่ต้องเก็บกระทงขึ้นจากน้ำหลายแสนใบภายในคืนเดียว</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-data">
+        <p class="hero-num"><span class="num-big">391,027</span><span class="num-unit">ใบ</span></p>
+        <p class="num-cap">กระทงที่กรุงเทพมหานครเก็บขึ้นจากแม่น้ำและคูคลอง 110 จุด หลังคืนลอยกระทง 2568 (20.00 น. ถึง 05.00 น.)</p>
+        <figure class="chart" aria-labelledby="trendCap">
+          <figcaption id="trendCap" class="chart-title">กระทงที่ กทม. เก็บได้ ลดลงทุกปี แต่ยังเกือบ 4 แสนใบ</figcaption>
+          <div class="bars" id="trendBars"></div>
+        </figure>
+        <figure class="chart" aria-labelledby="matCap">
+          <figcaption id="matCap" class="chart-title">ปี 2568 กระทงที่เก็บได้ทำจากอะไร</figcaption>
+          <div class="stack" id="matStack"></div>
+          <ul class="legend" id="matLegend"></ul>
+        </figure>
+        <details class="table-view">
+          <summary>ดูตัวเลขเป็นตาราง</summary>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">รายการ</th><th scope="col">จำนวน (ใบ)</th><th scope="col">สัดส่วน</th></tr></thead>
+              <tbody id="wasteTable"></tbody>
+            </table>
+          </div>
+        </details>
+        <p class="source">ที่มา: กรุงเทพมหานคร รายงานผ่าน <a href="https://www.thairath.co.th/news/local/bangkok/2893694" target="_blank" rel="noopener">ไทยรัฐออนไลน์</a> และ <a href="https://www.pptvhd36.com/news/%E0%B8%AA%E0%B8%B1%E0%B8%87%E0%B8%84%E0%B8%A1/260859" target="_blank" rel="noopener">PPTV</a> (6 พ.ย. 2568) ปีเดียวกันมีผู้ลอยกระทงออนไลน์ของ กทม. 23,347 ใบ</p>
+      </div>
+      <div class="why-side">
+        <div class="effort">
+          <p class="eyebrow">เฉพาะแม่น้ำเจ้าพระยาช่วงสะพานพระราม 8 ถึงพระราม 9</p>
+          <ul class="effort-list">
+            <li><strong>163</strong>เจ้าหน้าที่</li>
+            <li><strong>34</strong>ลำ เรือเก็บขยะและเรือสนับสนุน</li>
+            <li><strong>8</strong>คัน รถบรรทุก</li>
+          </ul>
+          <p>กระทงธรรมชาติถูกบดไปทำปุ๋ยที่โรงงานหนองแขม ส่วนกระทงโฟมและวัสดุอื่นต้องนำไปฝังกลบ</p>
+        </div>
+        <div class="online-note">
+          <p><strong id="liveCount">0</strong> ใบในสายน้ำนี้ ไม่มีใบไหนต้องเก็บขึ้นจากน้ำ</p>
+          <button class="btn btn-primary" type="button" id="whyGo">ลอยกระทงออนไลน์เลย</button>
+        </div>
+        <div class="pledge-box">
+          <p class="eyebrow">ขอขมาพระแม่คงคา แบบวันนี้</p>
+          <h3>ดูแลสายน้ำจริง ๆ</h3>
+          <p>ความเชื่อหลักของการลอยกระทงคือการขอขมาพระแม่คงคาที่เราได้ใช้น้ำ วิธีขอขมาที่ตรงที่สุดในวันนี้คือดูแลแม่น้ำจริง เลือกได้มากกว่าหนึ่งข้อ</p>
+          <div class="pledges" id="pledges"></div>
+          <p class="pledge-count" id="pledgeCount"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>เนื้อหาตำนานเรียบเรียงจากบทความ <a href="https://www.skntc.ac.th/%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%A7%E0%B8%B1%E0%B8%99%E0%B8%A5%E0%B8%AD%E0%B8%A2%E0%B8%81%E0%B8%A3%E0%B8%B0%E0%B8%97%E0%B8%87-%E0%B8%95%E0%B8%B3%E0%B8%99%E0%B8%B2/" target="_blank" rel="noopener">ประวัติวันลอยกระทง ตำนานและความเชื่อวันลอยกระทง</a> ของวิทยาลัยเทคนิคสมุทรสาคร ตำนานบางเรื่องมีหลายฉบับ รายละเอียดอาจต่างกันตามแหล่งที่มา</p>
+    <p>ภาพดวงจันทร์: Gregory H. Revera, <a href="https://creativecommons.org/licenses/by-sa/3.0/deed.th" target="_blank" rel="noopener">CC BY-SA 3.0</a> ผ่าน <a href="https://commons.wikimedia.org/wiki/File:FullMoon2010.jpg" target="_blank" rel="noopener">Wikimedia Commons</a> (ตัดขอบและย่อขนาด) · ข้อมูลกระทงจากกรุงเทพมหานคร ผ่านไทยรัฐออนไลน์และ PPTV</p>
+    <p>ความเป็นส่วนตัว: ข้อความลอยทุกข์ไม่ถูกบันทึกที่ใด คำอธิษฐานที่ปิดการแชร์จะไม่ถูกส่งออกจากเครื่อง และชื่อที่แสดงคือชื่อที่คุณพิมพ์เอง</p>
+    <p><button class="link-btn" type="button" id="screenLink">เปิดโหมดจอใหญ่</button> สำหรับฉายบนโปรเจกเตอร์ในงาน คนในงานสแกน QR แล้วลอยกระทงขึ้นจอได้ทันที และทุกคนจะปล่อยโคมพร้อมกันตอน <span id="momentTimes">19:00, 20:00, 21:00 และ 22:00</span></p>
+    <p>E-Kratong · ลอยกระทง 2569</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" hidden>
+  <p id="toastText"></p>
+  <div class="toast-actions">
+    <button class="btn btn-sm btn-primary" type="button" id="cardBtn" hidden>บันทึกการ์ดกระทง</button>
+    <button class="btn btn-sm btn-quiet" type="button" id="toastClose">ปิด</button>
+  </div>
+</div>
+</div>
+
+<script>
+(() => {
+'use strict';
+document.documentElement.lang = 'th';
+const $ = (s) => document.querySelector(s);
+const TAU = Math.PI * 2;
+const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+let powerSaving = false;
+try { powerSaving = localStorage.getItem('e-kratong.powerSave') === '1'; } catch (e) {}
+const pixelRatio = () => Math.min(powerSaving ? 1 : 2, window.devicePixelRatio || 1);
+let DPR = pixelRatio();
+/* Scaling limits: what one viewer loads and draws stays bounded however many krathongs exist */
+const MAX_MINE = 12;              // stored per person (older ones drop off their own document)
+const SHOW_PER_PERSON = 3;        // per person on the river, so one person cannot fill it
+const READ_DOCS = 150;            // people read per viewer
+const WINDOW_MS = 48*3600e3;      // krathongs drift away after 48 hours
+
+/* ---------------- content ---------------- */
+const TYPES = {
+  suchada: { short:'ถาดทอง', name:'กระทงถาดทอง', legend:'ถาดทองของนางสุชาดา', origin:'พุทธศาสนา', meaning:'เดินตามรอยความดี', prompt:'ความดีหนึ่งอย่างที่ตั้งใจจะทำในปีนี้…', glow:[255,196,110] },
+  pratheep:{ short:'ประทีป', name:'ผางประทีป', legend:'ตามประทีป ทีปาวลี', origin:'คติพราหมณ์', meaning:'จุดแสงสว่างให้ชีวิต', prompt:'ขอให้แสงสว่างส่องไปถึง…', glow:[255,188,96] },
+  naga:    { short:'ใบตอง', name:'กระทงใบตองลายนาค', legend:'พระอุปคุตกับพระยานาค', origin:'พม่าและล้านนา', meaning:'ขอบคุณคนที่ช่วยให้ผ่านเรื่องยาก', prompt:'ขอบคุณ… ที่อยู่ข้างกันในวันที่ยาก', glow:[255,200,120] },
+  saphao:  { short:'สะเพา', name:'สะเพาล้านนา', legend:'ลอยโขมดแห่งหริภุญชัย', origin:'ล้านนา', meaning:'ส่งความคิดถึงถึงคนไกล', prompt:'ฝากความคิดถึงไปถึง…', glow:[255,196,110] },
+  lantern: { short:'โคมน้ำ', name:'โคมน้ำ', legend:'ปั่งจุ๊ยเต็ง ปล่อยโคมน้ำ', origin:'จีนโบราณ', meaning:'ระลึกถึงคนที่จากไป', prompt:'ระลึกถึง… ด้วยความรักเสมอ', glow:[255,118,78] }
+};
+const ORDER = ['suchada','pratheep','naga','saphao','lantern'];
+const LEGENDS = {
+  suchada: { num:'เรื่องที่หนึ่ง', tab:'ถาดทองนางสุชาดา', title:'ถาดทองของนางสุชาดา กับรอยพระพุทธบาท',
+    story:['ก่อนตรัสรู้ พระพุทธเจ้าประทับใต้ต้นโพธิ์ริมแม่น้ำเนรัญชรา นางสุชาดาให้สาวใช้นำข้าวมธุปายาสใส่ถาดทองไปถวาย เสวยแล้วทรงอธิษฐานว่าหากจะได้ตรัสรู้ ขอให้ถาดลอยทวนน้ำ ถาดก็ลอยทวนกระแสไปจมลงถึงพระยานาคใต้บาดาล',
+           'พระยานาคทูลขอให้ประทับรอยพระบาทไว้ริมฝั่งเพื่อให้ได้บูชา นางสุชาดาจึงนำดอกไม้และเครื่องหอมใส่ถาดลอยน้ำไปนมัสการทุกปี จนกลายเป็นประเพณีลอยกระทง อีกฉบับเล่าว่ารอยพระบาทอยู่ที่หาดทรายแม่น้ำนัมมทา'],
+    honored:'รอยพระพุทธบาท', today:'รอยพระบาทเป็นสัญลักษณ์ของการเดินตามทางที่ดี กระทงใบนี้จึงเหมาะกับการตั้งใจทำความดีหนึ่งอย่าง' },
+  pratheep: { num:'เรื่องที่สอง', tab:'ตามประทีป ตำราพราหมณ์', title:'ตามประทีป ตามตำราพราหมณ์',
+    story:['เดิมการลอยประทีปเป็นพิธีของพราหมณ์ เพื่อบูชาพระอิศวร พระนารายณ์ และพระพรหม คัมภีร์อินเดียเรียกว่า "ทีปาวลี" ต้องจุดประทีปบูชาก่อน ครบกำหนดจึงนำไปลอยน้ำ ช่วงเวลากำหนดตามโหราศาสตร์ เมื่อพระอาทิตย์โคจรอยู่ราศีพิจิก',
+           'ชาวพุทธรับพิธีนี้มาปรับเป็นการบูชารอยพระพุทธบาท คำว่าประทีปหมายถึงตะเกียงหรือโคม รวมถึง "ผาง" ถ้วยดินเผาเล็ก ๆ ใส่น้ำมันจุดไฟ'],
+    honored:'พระอิศวร พระนารายณ์ และพระพรหม', today:'แสงประทีปคือความหวัง ใช้กระทงใบนี้ขอพรให้เรื่องที่ตั้งใจมีทางสว่าง' },
+  naga: { num:'เรื่องที่สาม', tab:'พระอุปคุตกับพระยานาค', title:'พระอุปคุตกับพระยานาค',
+    story:['พระเจ้าอโศกมหาราชตั้งพระทัยสร้างเจดีย์ให้ครบ 84,000 องค์ แต่พระยามารคอยขัดขวาง จึงขอให้พระอรหันต์อุปคุตช่วย พระอุปคุตไปขอแรงพระยานาคจากเมืองบาดาล พระยานาคปราบพระยามารได้ การสร้างเจดีย์จึงสำเร็จ',
+           'นับแต่นั้นเมื่อถึงคืนเพ็ญเดือนสิบสอง ผู้คนจึงลอยกระทงบูชาคุณพระยานาค บางถิ่นเชื่อว่าพระอุปคุตบำเพ็ญอยู่ที่สะดือทะเล เรื่องนี้นับถือกันมากในพม่าและภาคเหนือของไทย'],
+    honored:'พระยานาค และพระอุปคุต', today:'เป็นเรื่องของการตอบแทนผู้ที่ช่วยให้ผ่านอุปสรรค ใช้กระทงใบนี้ขอบคุณคนที่อยู่ข้างกัน' },
+  saphao: { num:'เรื่องที่สี่', tab:'ลอยโขมด หริภุญชัย', title:'ลอยโขมด สะเพาแห่งหริภุญชัย',
+    story:['ครั้งหนึ่งอหิวาต์ระบาดในอาณาจักรหริภุญชัย ผู้คนที่รอดชีวิตอพยพไปอยู่เมืองสะเทิมและหงสาวดีราวหกปี บางคนได้ครอบครัวอยู่ที่นั่น เมื่อโรคสงบ บางส่วนก็กลับบ้าน',
+           'เมื่อครบรอบวันอพยพในวันยี่เพง ผู้คนใส่ธูปเทียนและสิ่งของลงใน "สะเพา" หรือสำเภาเล็ก ล่องน้ำไปถึงญาติที่หงสาวดี แสงเทียนวูบไหวบนน้ำคล้ายแสงผีโขมด จึงเรียกกันว่า "ลอยโขมด"'],
+    honored:'ญาติพี่น้องที่อยู่ห่างไกล', today:'คนจำนวนมากเรียนหรือทำงานไกลบ้าน สะเพาใบนี้ใช้ฝากความคิดถึงถึงคนที่อยู่อีกเมือง' },
+  lantern: { num:'เรื่องที่ห้า', tab:'ปั่งจุ๊ยเต็ง ของจีน', title:'ปั่งจุ๊ยเต็ง ปล่อยโคมน้ำของจีน',
+    story:['ทางเหนือของจีนสมัยก่อน เมื่อถึงหน้าน้ำมักเกิดน้ำท่วมใหญ่ บางปีมีผู้คนเสียชีวิตจำนวนมากและหาร่างไม่พบ ชาวบ้านจึงจัดกระทงใส่อาหารลอยน้ำเซ่นไหว้ดวงวิญญาณเป็นประจำทุกปี',
+           'การลอยทำตอนกลางคืนและจุดเทียนไว้ เพื่อส่องทางให้ดวงวิญญาณกลับไปได้ในความมืด ภาษาจีนเรียกว่า "ปั่งจุ๊ยเต็ง" แปลว่าปล่อยโคมน้ำ ตรงกับคำไทยว่าลอยโคม'],
+    honored:'ดวงวิญญาณผู้ล่วงลับ', today:'ใช้โคมน้ำใบนี้ระลึกถึงคนที่จากไป ด้วยแสงเล็ก ๆ ที่ส่องทางให้กัน' }
+};
+const PLEDGES = [
+  { id:'litter',  label:'ไม่ทิ้งขยะลงแม่น้ำลำคลอง' },
+  { id:'plastic', label:'ลดถุงและขวดพลาสติกใช้ครั้งเดียว' },
+  { id:'natural', label:'ถ้าลอยจริง ใช้วัสดุธรรมชาติ ไม่ใช้โฟมและลวดเย็บ' },
+  { id:'family',  label:'หนึ่งครอบครัว หนึ่งกระทง' },
+  { id:'water',   label:'ใช้น้ำอย่างรู้คุณค่า' }
+];
+const PLEDGE_IDS = PLEDGES.map(p => p.id);
+const WISH_SAMPLES = {
+  suchada: ['ปีนี้จะช่วยงานบ้านทุกวัน', 'จะใจเย็นกับคนรอบตัวให้มากขึ้น', 'จะไปบริจาคโลหิตให้ได้สักครั้ง'],
+  pratheep:['ขอให้สอบผ่านทุกวิชา', 'ขอให้ได้งานที่ตั้งใจไว้', 'ขอให้ครอบครัวสุขภาพแข็งแรง'],
+  naga:    ['ขอบคุณเพื่อนที่อยู่ข้างกันตลอดปีนี้', 'ขอบคุณครูที่ไม่เคยทิ้งกัน', 'ขอบคุณแม่ที่เป็นกำลังใจเสมอ'],
+  saphao:  ['คิดถึงพ่อแม่ที่บ้าน แล้วจะรีบกลับไปหา', 'ฝากความคิดถึงไปถึงเพื่อนที่อยู่ต่างประเทศ', 'คิดถึงน้องที่เรียนอยู่ไกลบ้าน'],
+  lantern: ['ระลึกถึงคุณยายด้วยความรักเสมอ', 'ขอให้คุณตาไปสู่สุคติ', 'คิดถึงเจ้าตัวเล็กที่เคยอยู่ด้วยกัน']
+};
+
+/* ---------------- helpers ---------------- */
+function mulberry(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hash(str){
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+  return (h >>> 0) / 4294967295;
+}
+function newId(){ const a = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; const r = (window.crypto && crypto.getRandomValues) ? crypto.getRandomValues(new Uint32Array(12)) : Array.from({length:12}, () => Math.random()*4294967295); for (let i = 0; i < 12; i++) s += a[r[i] % a.length]; return s; }
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const segG = (window.Intl && Intl.Segmenter) ? new Intl.Segmenter('th', { granularity:'grapheme' }) : null;
+const segW = (window.Intl && Intl.Segmenter) ? new Intl.Segmenter('th', { granularity:'word' }) : null;
+function* textClusters(s){
+  if (segG){
+    for (const part of segG.segment(s)) yield part.segment;
+  } else {
+    // Keep Thai marks, flag pairs and joined emoji together on older browsers.
+    const cluster = /\r\n|\p{Regional_Indicator}{2}|[\s\S][\p{Mark}\p{Emoji_Modifier}\u0e33\u0eb3]*(?:\u200d[\s\S][\p{Mark}\p{Emoji_Modifier}\u0e33\u0eb3]*)*/gu;
+    for (const match of s.matchAll(cluster)) yield match[0];
+  }
+}
+const graphemes = (s) => Array.from(textClusters(s));
+function limitText(value, limit){
+  if (typeof value !== 'string' || limit <= 0) return '';
+  if (value.length <= limit) return value;
+  let end = 0, count = 0;
+  for (const cluster of textClusters(value)){
+    end += cluster.length;
+    if (++count === limit) break;
+  }
+  return value.slice(0, end);
+}
+/* Word filter (same list as server.js). Checks whole Thai words and adjacent pairs, so ordinary
+   words that only contain a bad string (หีบ, สัดส่วน, แกงกะหรี่, ดอกทองอุไร) still pass. */
+const BAD_WORDS = new Set(['ควย', 'เหี้ย', 'สัส', 'สัด', 'เย็ด', 'หี', 'แตด', 'ร่าน', 'ระยำ', 'จัญไร', 'ส้นตีน', 'ฉิบหาย', 'ชิบหาย', 'เงี่ยน', 'อีตัว']);
+const BAD_PAIRS = new Set(['อีดอก', 'ชาติหมา', 'ไอ้สัตว์', 'อีสัตว์', 'อีตัว', 'ไอ้ควาย', 'อีควาย', 'ลูกกะหรี่']);
+const BAD_LATIN = /\b(f+u+c+k+\w*|fck\w*|sh[i1]t+\w*|b[i1]tch\w*|cunts?|assholes?|motherf\w*|puss(y|ies)|sluts?|whores?|nigg\w*|fagg?ots?)\b/i;
+function hasBadWords(text){
+  if (!text) return false;
+  const t = String(text).toLowerCase().normalize('NFC').replace(/[​-‏⁠﻿]/g, '');
+  const variants = [t, t.replace(/[\s.\-_*+~^|\\/,'"!?()[\]{}]+/g, '')];
+  for (const v of variants){
+    if (BAD_LATIN.test(v)) return true;
+    const c = v.replace(/(.)\1{2,}/g, '$1');
+    if (!segW){ for (const w of BAD_WORDS) if (w.length >= 3 && c.indexOf(w) !== -1) return true; continue; }
+    const words = Array.from(segW.segment(c), s => s.segment.trim()).filter(Boolean);
+    for (let i = 0; i < words.length; i++){
+      if (BAD_WORDS.has(words[i])) return true;
+      if (i + 1 < words.length && BAD_PAIRS.has(words[i] + words[i + 1])) return true;
+    }
+  }
+  return false;
+}
+function loadSet(key){
+  try { const a = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(a) ? a.filter(x => typeof x === 'string').slice(-500) : []; }
+  catch (e){ return []; }
+}
+function saveSet(key, set){ try { localStorage.setItem(key, JSON.stringify(Array.from(set).slice(-500))); } catch (e) {} }
+const blessCount = new Map();                          // krathong key -> blessings received
+const blessedByMe = new Set(loadSet('e-kratong.blessed'));
+const hiddenKeys = new Set(loadSet('e-kratong.hidden')); // krathongs this viewer reported (hidden on this device)
+const rtf = (window.Intl && Intl.RelativeTimeFormat) ? new Intl.RelativeTimeFormat('th', { numeric:'auto' }) : null;
+function ago(ms){
+  if (!ms) return '';
+  const s = (ms - Date.now()) / 1000, a = Math.abs(s);
+  if (a < 60 || !rtf) return 'เมื่อสักครู่';
+  if (a < 3600) return rtf.format(Math.round(s/60), 'minute');
+  if (a < 86400) return rtf.format(Math.round(s/3600), 'hour');
+  return rtf.format(Math.round(s/86400), 'day');
+}
+function cleanItem(raw, owner){
+  if (!raw || typeof raw !== 'object') return null;
+  const k = (typeof raw.k === 'string' && /^[A-Za-z0-9_-]{4,24}$/.test(raw.k)) ? raw.k : null;
+  const t = (typeof raw.t === 'string' && ORDER.indexOf(raw.t) !== -1) ? raw.t : null;
+  if (!k || !t) return null;
+  return { k, t,
+    w: limitText(raw.w, 140),
+    n: limitText(raw.n, 24),
+    p: raw.p === 1 ? 1 : 0,
+    at: (typeof raw.at === 'number' && isFinite(raw.at)) ? raw.at : 0,
+    b: (typeof raw.b === 'number' && raw.b >= 0 && raw.b < 1e7) ? Math.floor(raw.b) : 0,
+    craft: raw.craft === 1 ? 1 : 0,
+    owner };
+}
+const stripItem = (i) => ({ k:i.k, t:i.t, w:i.w, n:i.n, p:i.p, at:i.at });
+const cleanPledges = (v) => Array.isArray(v) ? PLEDGE_IDS.filter(id => v.indexOf(id) !== -1) : [];
+
+/* ---------------- storage (per device) ---------------- */
+const LS_KEY = 'e-kratong.v1';
+function loadLocal(){
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return { items:[], pledges:[] };
+    const d = JSON.parse(raw);
+    return { items:(Array.isArray(d.items) ? d.items : []).map(i => cleanItem(i, 'local')).filter(Boolean).map(stripItem).slice(0, MAX_MINE), pledges:cleanPledges(d.pledges) };
+  } catch (e) { return { items:[], pledges:[] }; }
+}
+function saveLocal(){ try { localStorage.setItem(LS_KEY, JSON.stringify(local)); } catch (e) {} }
+
+/* ---------------- drawing: krathong ---------------- */
+function ell(c, x, y, rx, ry){ c.beginPath(); c.ellipse(x, y, Math.max(0.01, rx), Math.max(0.01, ry), 0, 0, TAU); }
+function rrect(c, x, y, w, h, r){ c.beginPath(); c.moveTo(x+r, y); c.arcTo(x+w, y, x+w, y+h, r); c.arcTo(x+w, y+h, x, y+h, r); c.arcTo(x, y+h, x, y, r); c.arcTo(x, y, x+w, y, r); c.closePath(); }
+let recordingSprite = null;
+const flameGlow = (() => {
+  const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+  const c = cv.getContext('2d'), g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, 'rgba(255,214,130,0.6)'); g.addColorStop(0.45, 'rgba(255,170,70,0.16)'); g.addColorStop(1, 'rgba(255,170,70,0)');
+  c.fillStyle = g; c.fillRect(0, 0, 64, 64); return cv;
+})();
+function flame(c, x, y, t, seed, size){
+  size = size || 1;
+  if (recordingSprite){ recordingSprite.flames.push([x, y, size, seed]); return; }
+  const f = reduceMotion ? 1 : 1 + 0.13*Math.sin(t*8.7 + seed*11) + 0.07*Math.sin(t*21.3 + seed*5);
+  const sway = reduceMotion ? 0 : 0.1*Math.sin(t*4.3 + seed*3);
+  const R = 17*size*f, cy = y - 5*size;
+  c.drawImage(flameGlow, x - R, cy - R, R*2, R*2);
+  c.save(); c.translate(x, y); c.rotate(sway); c.scale(size, size*f);
+  c.beginPath(); c.moveTo(0,-11); c.bezierCurveTo(4.2,-5.5,4,0,0,0.8); c.bezierCurveTo(-4,0,-4.2,-5.5,0,-11); c.fillStyle = '#ffb347'; c.fill();
+  c.beginPath(); c.moveTo(0,-7); c.bezierCurveTo(2.3,-3.6,2.2,0,0,0.4); c.bezierCurveTo(-2.2,0,-2.3,-3.6,0,-7); c.fillStyle = '#fff3cc'; c.fill();
+  c.restore();
+}
+function candle(c, x, y, t, seed, h){
+  h = h || 11;
+  c.fillStyle = '#f3ecdc'; c.fillRect(x-1.7, y-h, 3.4, h);
+  c.fillStyle = 'rgba(120,100,70,.35)'; c.fillRect(x+0.7, y-h, 1, h);
+  flame(c, x, y-h-0.6, t, seed, 0.8);
+}
+function drawEmber(c, x, y, size, t, seed){
+  const a = reduceMotion ? 0.8 : 0.55 + 0.45*Math.sin(t*3 + seed);
+  c.fillStyle = 'rgba(255,130,70,' + a.toFixed(2) + ')'; ell(c, x, y, 1.3*size, 1.3*size); c.fill();
+}
+function incense(c, x, y, ang, t, seed){
+  c.save(); c.translate(x, y); c.rotate(ang);
+  c.strokeStyle = '#8a5a34'; c.lineWidth = 0.9; c.beginPath(); c.moveTo(0,0); c.lineTo(0,-18); c.stroke();
+  c.fillStyle = '#a8453a'; c.fillRect(-0.75,-18,1.5,5);
+  if (recordingSprite && recordingSprite.preview) recordingSprite.embers.push([x + 18.4*Math.sin(ang), y - 18.4*Math.cos(ang), seed]);
+  else drawEmber(c, 0, -18.4, 1, t, seed);
+  c.restore();
+}
+function marigold(c, x, y, r){
+  // ruffled pom-pom: four rings of scalloped petals, deep orange at the base, gold at the heart
+  c.fillStyle = '#b8560c'; ell(c, x, y + r*0.12, r, r*0.8); c.fill();
+  const rings = [[1, '#e07f16', 11], [0.74, '#f39a1f', 9], [0.48, '#ffb52e', 7], [0.22, '#ffd060', 4]];
+  for (const [k, col, n] of rings){
+    c.fillStyle = col;
+    for (let i = 0; i < n; i++){
+      const a = i/n*TAU + k*2;
+      ell(c, x + Math.cos(a)*r*k*0.6, y + Math.sin(a)*r*k*0.4 - r*(1 - k)*0.55, r*(0.18 + 0.2*k), r*(0.14 + 0.16*k));
+      c.fill();
+    }
+  }
+}
+function rose(c, x, y, r, light, dark){
+  c.fillStyle = dark; ell(c, x, y, r, r*0.82); c.fill();
+  c.fillStyle = light; ell(c, x - r*0.08, y - r*0.12, r*0.82, r*0.64); c.fill();
+  c.strokeStyle = dark; c.lineWidth = Math.max(0.4, r*0.16); c.lineCap = 'round';
+  c.beginPath(); c.arc(x, y - r*0.12, r*0.52, Math.PI*0.85, Math.PI*2.05); c.stroke();
+  c.beginPath(); c.arc(x + r*0.06, y - r*0.2, r*0.26, Math.PI*1.1, Math.PI*2.7); c.stroke();
+  c.lineCap = 'butt';
+}
+function jasmine(c, x, y, s){
+  c.fillStyle = '#fbf8ee'; ell(c, x, y, 1.25*s, 1.05*s); c.fill();
+  c.fillStyle = 'rgba(170,160,130,.5)'; ell(c, x + 0.35*s, y + 0.3*s, 0.6*s, 0.45*s); c.fill();
+}
+function leafFold(c, x, y, ang, w, h, light, dark){
+  // A folded banana-leaf petal (กลีบใบตอง): two faces meeting at a crisp fold line
+  c.save(); c.translate(x, y); c.rotate(ang);
+  const g = c.createLinearGradient(0, 0, 0, -h); g.addColorStop(0, dark); g.addColorStop(1, light);
+  c.beginPath(); c.moveTo(0, 0); c.lineTo(-w/2, 0); c.bezierCurveTo(-w*0.52, -h*0.4, -w*0.22, -h*0.82, 0, -h); c.closePath();
+  c.fillStyle = g; c.fill();
+  c.beginPath(); c.moveTo(0, 0); c.lineTo(w/2, 0); c.bezierCurveTo(w*0.52, -h*0.4, w*0.22, -h*0.82, 0, -h); c.closePath();
+  c.fillStyle = dark; c.fill();
+  c.beginPath(); c.moveTo(-w/2, 0); c.bezierCurveTo(-w*0.52, -h*0.4, -w*0.22, -h*0.82, 0, -h); c.bezierCurveTo(w*0.22, -h*0.82, w*0.52, -h*0.4, w/2, 0);
+  c.strokeStyle = 'rgba(25,55,20,.75)'; c.lineWidth = 0.55; c.stroke();
+  c.beginPath(); c.moveTo(0, -0.6); c.lineTo(0, -h*0.94); c.strokeStyle = 'rgba(232,255,205,.55)'; c.lineWidth = 0.5; c.stroke();
+  c.beginPath(); c.moveTo(-w*0.24, -0.3); c.quadraticCurveTo(-w*0.16, -h*0.38, 0, -h*0.56); c.strokeStyle = 'rgba(232,255,205,.25)'; c.stroke();
+  c.restore();
+}
+function lotusPetal(c, x, y, ang, w, h, tip, base, edge){
+  c.save(); c.translate(x, y); c.rotate(ang);
+  const g = c.createLinearGradient(0, 0, 0, -h); g.addColorStop(0, base); g.addColorStop(0.5, base); g.addColorStop(1, tip);
+  c.beginPath(); c.moveTo(0, 0);
+  c.bezierCurveTo(-w*0.75, -h*0.12, -w*0.55, -h*0.72, 0, -h);
+  c.bezierCurveTo(w*0.55, -h*0.72, w*0.75, -h*0.12, 0, 0);
+  c.fillStyle = g; c.fill();
+  c.strokeStyle = edge; c.lineWidth = 0.5; c.stroke();
+  c.beginPath(); c.moveTo(0, -h*0.12); c.lineTo(0, -h*0.82); c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 0.45; c.stroke();
+  c.restore();
+}
+function ring(n, rx, ry, y, off){
+  const out = [];
+  for (let i = 0; i < n; i++){ const a = (i + off)/n*TAU; out.push({ ang:a, x:Math.cos(a)*rx, y:y + Math.sin(a)*ry, front:Math.sin(a) >= 0 }); }
+  out.sort((p, q) => Math.sin(p.ang) - Math.sin(q.ang));
+  return out;
+}
+function drawNaga(c, t, seed){
+  // Classic banana-leaf krathong: a banana-trunk slice ringed by three tiers of folded leaves (ลายเกล็ดนาค)
+  const side = c.createLinearGradient(-27, 0, 27, 0);
+  side.addColorStop(0, '#7d9158'); side.addColorStop(0.5, '#c8d6a0'); side.addColorStop(1, '#6f8450');
+  c.fillStyle = side; ell(c, 0, 2, 27, 8); c.fill(); c.fillRect(-27, -5, 54, 7);
+  c.strokeStyle = 'rgba(70,90,45,.35)'; c.lineWidth = 0.45;
+  for (let x = -24; x <= 24; x += 3.5){ const d = Math.sqrt(Math.max(0, 1 - (x/27)*(x/27)))*8; c.beginPath(); c.moveTo(x, -5 + d); c.lineTo(x, 2 + d); c.stroke(); }
+  c.fillStyle = '#e6edcb'; ell(c, 0, -5, 27, 8); c.fill();
+  c.strokeStyle = 'rgba(160,180,120,.7)'; ell(c, 0, -5, 21, 6.2); c.stroke(); ell(c, 0, -5, 14, 4.1); c.stroke();
+  const t1 = ring(14, 24, 7, -5, 0), t2 = ring(11, 17.5, 5.1, -9, 0.5), t3 = ring(8, 11, 3.3, -13, 0.25);
+  const L1 = p => leafFold(c, p.x, p.y, Math.cos(p.ang)*0.6, 10.5, 15, p.front ? '#9fd07a' : '#6c9e4e', p.front ? '#4f8636' : '#3c6a2a');
+  const L2 = p => leafFold(c, p.x, p.y, Math.cos(p.ang)*0.42, 9.5, 14, p.front ? '#a9d884' : '#76a957', p.front ? '#558d3a' : '#42712e');
+  const L3 = p => leafFold(c, p.x, p.y, Math.cos(p.ang)*0.3, 7.5, 9.5, p.front ? '#b5e08f' : '#80b360', p.front ? '#5c9641' : '#477a33');
+  t1.filter(p => !p.front).forEach(L1); t2.filter(p => !p.front).forEach(L2); t3.filter(p => !p.front).forEach(L3);
+  t3.filter(p => p.front).forEach(L3);
+  // Flower crown on top: roses, marigolds, a jasmine garland, incense and the candle
+  rose(c, -8.5, -19, 3.5, '#f0627a', '#a8233d'); rose(c, 8.5, -19, 3.5, '#f0627a', '#a8233d');
+  marigold(c, -4.6, -22, 4.5); marigold(c, 4.6, -22, 4.5); marigold(c, 0, -25.5, 4.5);
+  for (let i = 0; i <= 12; i++){ const a = i/12*Math.PI; jasmine(c, Math.cos(a)*11.5, -17.5 + Math.sin(a)*3.2, 1); }
+  incense(c, -3.5, -25, -0.22, t, seed); incense(c, 0.5, -26, 0.02, t, seed + 1); incense(c, 4, -25, 0.24, t, seed + 2);
+  candle(c, 0, -27, t, seed, 9);
+  t2.filter(p => p.front).forEach(L2); t1.filter(p => p.front).forEach(L1);
+}
+function drawSuchada(c, t, seed){
+  // Golden tray (ถาดทอง) carrying a lotus in full bloom
+  let g = c.createLinearGradient(-30, 0, 30, 0);
+  g.addColorStop(0, '#6e4a10'); g.addColorStop(0.35, '#e2b64a'); g.addColorStop(0.5, '#fff0b5'); g.addColorStop(0.65, '#dcae42'); g.addColorStop(1, '#6e4a10');
+  c.fillStyle = g; c.beginPath(); c.moveTo(-30, -4); c.bezierCurveTo(-29, 6, -12, 8, 0, 8); c.bezierCurveTo(12, 8, 29, 6, 30, -4); c.closePath(); c.fill();
+  c.fillStyle = '#efc95e'; ell(c, 0, -4, 30, 8.6); c.fill();
+  g = c.createRadialGradient(-6, -6, 2, 0, -4.5, 26); g.addColorStop(0, '#d9a73b'); g.addColorStop(1, '#8c6216');
+  c.fillStyle = g; ell(c, 0, -4.6, 26, 6.8); c.fill();
+  c.fillStyle = 'rgba(255,244,200,.75)';   // กระจัง-style scallops along the front rim
+  for (let i = 1; i < 16; i++){ const a = i/16*Math.PI, x = Math.cos(a)*28.2, y = -4 + Math.sin(a)*7.9; c.beginPath(); c.moveTo(x - 1.3, y); c.quadraticCurveTo(x, y - 2.2, x + 1.3, y); c.closePath(); c.fill(); }
+  const r1 = ring(10, 15, 4.3, -7, 0), r2 = ring(8, 9.5, 2.8, -9, 0.5), r3 = ring(6, 4.8, 1.4, -11, 0.2);
+  const P1 = p => lotusPetal(c, p.x, p.y, Math.cos(p.ang)*0.95, 10, 15, p.front ? '#ef6f98' : '#d4577f', p.front ? '#ffe3ec' : '#f3bfd0', 'rgba(160,50,90,.55)');
+  const P2 = p => lotusPetal(c, p.x, p.y, Math.cos(p.ang)*0.55, 9, 14, p.front ? '#f27aa1' : '#dc6088', p.front ? '#fff0f5' : '#f6cddb', 'rgba(160,50,90,.5)');
+  const P3 = p => lotusPetal(c, p.x, p.y, Math.cos(p.ang)*0.22, 7, 11, '#f48aac', '#fff6f9', 'rgba(160,50,90,.45)');
+  r1.filter(p => !p.front).forEach(P1); r2.filter(p => !p.front).forEach(P2); r3.filter(p => !p.front).forEach(P3);
+  c.fillStyle = '#f1c94a'; ell(c, 0, -13, 5, 1.9); c.fill();
+  c.fillStyle = '#c79a1e'; for (let i = 0; i < 6; i++){ const a = i/6*TAU; ell(c, Math.cos(a)*2.6, -13 + Math.sin(a)*0.9, 0.5, 0.4); c.fill(); }
+  incense(c, -3.5, -13, -0.22, t, seed); incense(c, 3.5, -13, 0.22, t, seed + 2);
+  candle(c, 0, -14, t, seed, 11);
+  r3.filter(p => p.front).forEach(P3); r2.filter(p => p.front).forEach(P2); r1.filter(p => p.front).forEach(P1);
+}
+function drawPratheep(c, t, seed){
+  // A clay oil lamp (ผาง) floating on a lotus leaf, marigold petals scattered around it
+  let g = c.createRadialGradient(-4, -2, 1, 0, 0, 24); g.addColorStop(0, '#6fae55'); g.addColorStop(1, '#2d5f26');
+  c.fillStyle = g; c.beginPath(); c.ellipse(0, 0, 24, 7, 0, 0.18, TAU - 0.18); c.lineTo(0, 0); c.closePath(); c.fill();
+  c.strokeStyle = '#8fcb72'; c.lineWidth = 0.7; c.beginPath(); c.ellipse(0, 0, 24, 7, 0, 0.18, TAU - 0.18); c.stroke();
+  c.strokeStyle = 'rgba(190,240,160,.35)'; c.lineWidth = 0.45;
+  for (let i = 1; i < 12; i++){ const a = 0.18 + i/12*(TAU - 0.36); c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a)*22, Math.sin(a)*6.4); c.stroke(); }
+  [[-15, -1], [-11, 3], [13, 3], [-6, 4.5], [8, -3.5], [-17, 2.5], [16, 0.5]].forEach(([x, y], i) => { c.fillStyle = i % 2 ? '#f5a623' : '#e07f16'; ell(c, x, y, 1.8, 1.1); c.fill(); });
+  jasmine(c, -12, -2.5, 1); jasmine(c, 11, -1.5, 1); jasmine(c, 4, 4, 0.9);
+  g = c.createLinearGradient(-12, 0, 12, 0); g.addColorStop(0, '#6a3216'); g.addColorStop(0.45, '#c47645'); g.addColorStop(1, '#5e2b12');
+  c.fillStyle = g; c.beginPath(); c.moveTo(-12, -7); c.bezierCurveTo(-12, -1, -7, 2.5, 0, 2.5); c.bezierCurveTo(7, 2.5, 12, -1, 12, -7); c.closePath(); c.fill();
+  c.strokeStyle = 'rgba(60,25,8,.6)'; c.lineWidth = 0.5;
+  c.beginPath(); c.ellipse(0, -4.2, 11.6, 3.2, 0, 0.15, Math.PI - 0.15); c.stroke();
+  c.fillStyle = 'rgba(255,210,170,.5)'; for (let i = 1; i < 9; i++){ const a = i/9*Math.PI; ell(c, Math.cos(a)*10.5, -2.6 + Math.sin(a)*2.6, 0.45, 0.45); c.fill(); }
+  c.fillStyle = '#d58a59'; ell(c, 0, -7, 12, 3.4); c.fill();
+  c.fillStyle = '#2b170a'; ell(c, 0, -7, 9.8, 2.5); c.fill();
+  g = c.createRadialGradient(0, -7.4, 0, 0, -7.4, 7); g.addColorStop(0, 'rgba(255,200,110,.6)'); g.addColorStop(1, 'rgba(255,200,110,0)');
+  c.fillStyle = g; ell(c, 0, -7.2, 9, 2.3); c.fill();
+  flame(c, 0, -8, t, seed, 1.35);
+}
+function drawSaphaoFlag(c, t, seed){
+  const sw = reduceMotion ? 0 : Math.sin(t*2.2 + seed)*0.12;
+  c.save(); c.translate(-25, -37); c.rotate(sw);
+  c.strokeStyle = '#d9c9a0'; c.lineWidth = 0.9;
+  c.beginPath(); c.moveTo(0, 0); c.lineTo(9, 0); c.stroke();
+  const cols = ['#c8483a', '#f0c24a', '#c8483a', '#f0c24a'];
+  for (let i = 0; i < 4; i++){ c.fillStyle = cols[i]; c.fillRect(2.5, 0.5 + i*5, 5, 5); }
+  c.fillStyle = '#c8483a'; c.beginPath(); c.moveTo(2.5, 20.5); c.lineTo(7.5, 20.5); c.lineTo(5, 24); c.closePath(); c.fill();
+  c.restore();
+}
+function drawSaphao(c, t, seed){
+  // Lanna สะเพา: a small banana-stalk boat with a ตุง flag at the stern
+  c.fillStyle = '#365e25'; c.beginPath(); c.moveTo(-31, -10); c.quadraticCurveTo(0, -15.5, 31, -10); c.quadraticCurveTo(0, -4.5, -31, -10); c.closePath(); c.fill();
+  c.strokeStyle = '#d9c9a0'; c.lineWidth = 0.9; c.beginPath(); c.moveTo(-25, -9); c.lineTo(-25, -38); c.stroke();
+  if (!recordingSprite || !recordingSprite.preview) drawSaphaoFlag(c, t, seed);
+  marigold(c, -13, -10.5, 3.4); rose(c, 3, -10.5, 2.8, '#f0627a', '#a8233d'); marigold(c, 20, -11, 3);
+  candle(c, -5, -9.5, t, seed, 10); candle(c, 12, -9.5, t, seed + 3, 9);
+  // banana-stalk prow (right) and stern (left), curled like a naga tail
+  const hullG = c.createLinearGradient(0, -12, 0, 4); hullG.addColorStop(0, '#93c46b'); hullG.addColorStop(1, '#3d6a2b');
+  c.fillStyle = hullG; c.strokeStyle = '#2c4f1f'; c.lineWidth = 0.6;
+  c.beginPath(); c.moveTo(27, -9); c.quadraticCurveTo(36, -9, 39, -17); c.quadraticCurveTo(41, -24, 36.5, -25); c.quadraticCurveTo(33, -25, 34.5, -21.5); c.quadraticCurveTo(36, -19, 34, -15.5); c.quadraticCurveTo(31, -11.5, 25, -6); c.closePath(); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(-27, -9); c.quadraticCurveTo(-34, -9, -36, -14); c.quadraticCurveTo(-37.5, -19, -34, -19.5); c.quadraticCurveTo(-31.5, -19.5, -32.5, -17); c.quadraticCurveTo(-33, -13.5, -29, -11); c.quadraticCurveTo(-27, -9.5, -24, -6); c.closePath(); c.fill(); c.stroke();
+  // near side of the hull
+  c.beginPath(); c.moveTo(-31, -10); c.quadraticCurveTo(-26, 3.5, 0, 3.5); c.quadraticCurveTo(26, 3.5, 31, -10); c.quadraticCurveTo(0, -4.5, -31, -10); c.closePath();
+  c.fillStyle = hullG; c.fill(); c.stroke();
+  c.strokeStyle = 'rgba(30,60,20,.4)'; c.lineWidth = 0.5;
+  for (let i = -4; i <= 4; i++){ const x = i*6.2; c.beginPath(); c.moveTo(x, -6.5 - Math.abs(i)*0.4); c.lineTo(x*0.93, 2.8 - Math.abs(i)*0.85); c.stroke(); }
+  // folded-leaf trim along the near rim
+  for (let i = -4; i <= 4; i++){ const x = i*6.6, y = -7.25 - 2.75*(x/31)*(x/31); leafFold(c, x, y + 0.6, x/70, 5.4, 6.8, '#b5e08f', '#5c9641'); }
+  c.strokeStyle = '#c6e59f'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(-31, -10); c.quadraticCurveTo(0, -4.5, 31, -10); c.stroke();
+}
+function drawLantern(c, t, seed){
+  // Chinese water lantern: a glowing hexagonal paper lamp with a pagoda roof, sitting in a red lotus float
+  let g = c.createRadialGradient(0, -15, 2, 0, -15, 34); g.addColorStop(0, 'rgba(255,140,90,.34)'); g.addColorStop(1, 'rgba(255,140,90,0)');
+  c.fillStyle = g; ell(c, 0, -15, 34, 34); c.fill();
+  const base = ring(10, 15, 4.4, -1, 0.5);
+  const B = p => lotusPetal(c, p.x, p.y, Math.cos(p.ang)*1.15, 9, 11, '#ff8a78', '#b81f2c', 'rgba(90,10,15,.6)');
+  base.filter(p => !p.front).forEach(B);
+  const top = -27, bot = -4;
+  const face = (x0, x1, lit) => {
+    const fg = c.createLinearGradient(x0, 0, x1, 0);
+    fg.addColorStop(0, lit ? '#ff9f6e' : '#b8322a'); fg.addColorStop(0.5, lit ? '#ffd9a0' : '#e3603f'); fg.addColorStop(1, lit ? '#ff9f6e' : '#9c261f');
+    c.fillStyle = fg; c.fillRect(x0, top, x1 - x0, bot - top);
+  };
+  face(-12, -6, false); face(-6, 6, true); face(6, 12, false);
+  g = c.createRadialGradient(0, -14, 1, 0, -14, 12); g.addColorStop(0, 'rgba(255,245,200,.85)'); g.addColorStop(1, 'rgba(255,245,200,0)');
+  c.fillStyle = g; c.fillRect(-12, top, 24, bot - top);
+  c.strokeStyle = '#f0c35a'; c.lineWidth = 0.9;
+  [-12, -6, 6, 12].forEach(x => { c.beginPath(); c.moveTo(x, top); c.lineTo(x, bot); c.stroke(); });
+  c.fillStyle = '#e8b64c'; c.fillRect(-12.6, bot - 1.6, 25.2, 2.2); c.fillRect(-12.6, top - 0.6, 25.2, 2);
+  c.strokeStyle = 'rgba(150,30,20,.55)'; c.lineWidth = 0.6;   // paper-cut medallion on the lit face
+  c.beginPath(); c.arc(0, -15.5, 3.2, 0, TAU); c.stroke();
+  c.beginPath(); c.moveTo(-3.2, -15.5); c.lineTo(3.2, -15.5); c.moveTo(0, -18.7); c.lineTo(0, -12.3); c.stroke();
+  c.beginPath();                                                // pagoda roof with upturned eaves
+  c.moveTo(-17, top); c.quadraticCurveTo(-12, top - 1, -8, top - 6); c.lineTo(8, top - 6); c.quadraticCurveTo(12, top - 1, 17, top);
+  c.quadraticCurveTo(18.5, top - 1.5, 18, top - 3); c.quadraticCurveTo(16.5, top + 0.6, 12.6, top + 0.6);
+  c.lineTo(-12.6, top + 0.6); c.quadraticCurveTo(-16.5, top + 0.6, -18, top - 3); c.quadraticCurveTo(-18.5, top - 1.5, -17, top);
+  c.closePath(); c.fillStyle = '#3b1410'; c.fill(); c.strokeStyle = '#e8b64c'; c.lineWidth = 0.6; c.stroke();
+  c.fillStyle = '#f0c35a'; ell(c, 0, top - 7.2, 1.6, 1.6); c.fill();
+  for (const x of [-12, 12]){
+    c.strokeStyle = '#e8b64c'; c.lineWidth = 0.6; c.beginPath(); c.moveTo(x, bot + 0.4); c.lineTo(x, bot + 4); c.stroke();
+    c.fillStyle = '#d92f2f'; c.beginPath(); c.moveTo(x - 1.3, bot + 4); c.lineTo(x + 1.3, bot + 4); c.lineTo(x, bot + 9); c.closePath(); c.fill();
+  }
+  base.filter(p => p.front).forEach(B);
+}
+const DRAW = { suchada:drawSuchada, pratheep:drawPratheep, naga:drawNaga, saphao:drawSaphao, lantern:drawLantern };
+/* Sprite cache: each krathong body is drawn once per type and size, then stamped every frame.
+   The close-up preview also animates the incense tips and the saphao flag. */
+const sprites = new Map(), SPRITE_MAX = 40;
+let previewSprite = null;
+function makeSprite(type, px, preview){
+  const cv = document.createElement('canvas'); cv.width = Math.ceil(84*px); cv.height = Math.ceil(76*px);
+  const c = cv.getContext('2d'); c.setTransform(px, 0, 0, px, 42*px, 52*px);
+  const sp = { cv, px, type, preview, flames:[], embers:[] };
+  recordingSprite = sp;
+  try { DRAW[type](c, 0.8, 0); } finally { recordingSprite = null; }
+  return sp;
+}
+function sprite(type, s, preview){
+  const px = Math.max(0.25, Math.round(s*DPR*4)/4);
+  if (preview){
+    if (!previewSprite || previewSprite.type !== type || previewSprite.px !== px) previewSprite = makeSprite(type, px, true);
+    return previewSprite;
+  }
+  const key = type + '|' + px;
+  const sp = sprites.get(key) || makeSprite(type, px, false);
+  sprites.delete(key); sprites.set(key, sp);
+  if (sprites.size > SPRITE_MAX) sprites.delete(sprites.keys().next().value);
+  return sp;
+}
+const craftImages = new Map();   // key -> ready <img> of the workshop krathong (the 64 px thumbnail), bounded
+function craftImage(k){
+  let im = craftImages.get(k);
+  if (!im){
+    if (craftImages.size > 120) craftImages.delete(craftImages.keys().next().value);
+    im = new Image(); im.src = '/api/workshop/floats/' + encodeURIComponent(k) + '/thumb.png'; craftImages.set(k, im);
+  }
+  return im.complete && im.naturalWidth ? im : null;
+}
+function drawBoatSprite(c, type, scale, seed, preview = false){
+  const sp = sprite(type, scale, preview);
+  c.drawImage(sp.cv, -42*scale, -52*scale, sp.cv.width/sp.px*scale, sp.cv.height/sp.px*scale);
+  for (const [x, y, size, offset] of sp.flames) flame(c, x*scale, y*scale, T, seed + offset, size*scale);
+  for (const [x, y, offset] of sp.embers) drawEmber(c, x*scale, y*scale, scale, T, seed + offset);
+  if (preview && type === 'saphao'){ c.save(); c.scale(scale, scale); drawSaphaoFlag(c, T, seed); c.restore(); }
+}
+const glowSprites = {};
+function glowSprite(type){
+  if (glowSprites[type]) return glowSprites[type];
+  const gl = TYPES[type].glow, rgb = gl[0] + ',' + gl[1] + ',' + gl[2];
+  const cv = document.createElement('canvas'); cv.width = cv.height = 96;
+  const c = cv.getContext('2d'), g = c.createRadialGradient(48, 48, 0, 48, 48, 48);
+  g.addColorStop(0, 'rgba(' + rgb + ',.30)'); g.addColorStop(1, 'rgba(' + rgb + ',0)');
+  c.fillStyle = g; c.fillRect(0, 0, 96, 96);
+  return (glowSprites[type] = cv);
+}
+function drawSkyLantern(c, x, y, s, alpha, t, seed){
+  c.save(); c.globalAlpha = Math.max(0, Math.min(1, alpha)); c.translate(x, y); c.scale(s, s); c.rotate(Math.sin(t*0.9 + seed)*0.06);
+  const fl = reduceMotion ? 1 : 0.85 + 0.15*Math.sin(t*6 + seed*7);
+  c.drawImage(flameGlow, -26*fl, -26*fl, 52*fl, 52*fl);
+  const g = c.createLinearGradient(0, -13, 0, 9); g.addColorStop(0, '#e9a75a'); g.addColorStop(1, 'rgb(255,' + Math.round(205 + 30*fl) + ',140)');
+  c.fillStyle = g; c.beginPath(); c.moveTo(-8.5, -12); c.quadraticCurveTo(0, -16, 8.5, -12); c.lineTo(6.5, 8); c.quadraticCurveTo(0, 9.5, -6.5, 8); c.closePath(); c.fill();
+  c.fillStyle = '#fff4cf'; ell(c, 0, 9, 2.2, 1.4); c.fill();
+  c.restore();
+}
+function drawIcon(cv, type, w, h, scale, setStyle){
+  cv.width = Math.round(w*DPR); cv.height = Math.round(h*DPR);
+  if (setStyle){ cv.style.width = w + 'px'; cv.style.height = h + 'px'; }
+  const c = cv.getContext('2d'); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.clearRect(0, 0, w, h);
+  c.save(); c.translate(w/2, h*0.8); c.scale(scale, scale); DRAW[type](c, 0.8, 2); c.restore();
+}
+
+/* ---------------- river scene ---------------- */
+const sceneEl = $('#scene'), canvas = $('#river'), ctx = canvas.getContext('2d');
+const bottomEl = $('#sceneBottom');
+const bg = document.createElement('canvas'), bgc = bg.getContext('2d');
+let W = 0, H = 0, HZ = 0, SC = 1, moon = { x:0, y:0, r:30 }, bottomPad = 140;
+let stars = [], shoreLights = [], amb = [], lanterns = [], rings = [], letgos = [];
+let T = 0, last = 0, sceneVisible = false, frameEma = 16, slowFor = 0;
+const boats = new Map();          // krathongs currently on the river (a fixed-size pool)
+let queue = [];                   // krathongs waiting for their turn to float past
+const shownAt = new Map();        // when each krathong last entered the river
+let POOL = 40, poolCap = 60;      // pool size follows screen width; poolCap drops on slow devices
+let selectedK = null, lastMineK = null;
+
+function drawShore(c, w, hz, h){
+  const rnd = mulberry(7);
+  c.fillStyle = '#050e18';
+  c.beginPath(); c.moveTo(0, hz + 2); c.lineTo(0, hz - 4);
+  let x = 0;
+  while (x < w){ const bw = 14 + rnd()*30, bh = (0.016 + rnd()*0.034)*h; c.quadraticCurveTo(x + bw/2, hz - bh*1.6, x + bw, hz - bh*0.3*rnd()); x += bw; }
+  c.lineTo(w, hz + 2); c.closePath(); c.fill();
+  const cx = w*0.2, base = hz, ch = Math.min(h*0.15, 110), cw = ch*0.36;
+  c.beginPath(); c.moveTo(cx - cw, base); c.lineTo(cx - cw*0.85, base - ch*0.12); c.lineTo(cx - cw*0.6, base - ch*0.14);
+  c.quadraticCurveTo(cx - cw*0.62, base - ch*0.48, cx - cw*0.18, base - ch*0.52); c.lineTo(cx - cw*0.1, base - ch*0.62); c.lineTo(cx - 0.6, base - ch);
+  c.lineTo(cx + 0.6, base - ch); c.lineTo(cx + cw*0.1, base - ch*0.62); c.lineTo(cx + cw*0.18, base - ch*0.52);
+  c.quadraticCurveTo(cx + cw*0.62, base - ch*0.48, cx + cw*0.6, base - ch*0.14); c.lineTo(cx + cw*0.85, base - ch*0.12); c.lineTo(cx + cw, base); c.closePath(); c.fill();
+  c.fillStyle = 'rgba(255,196,130,.10)'; c.fillRect(0, hz, w, 1);
+}
+/* Full-moon photograph (assets/moon.jpg), drawn clipped to its disc. Falls back to a painted moon. */
+const moonImg = new Image();
+let moonReady = false;
+moonImg.onload = () => { moonReady = true; if (W) buildBackground(); if (PW) buildPreviewSky(); };
+moonImg.src = 'assets/moon.jpg';
+const moonExportSafe = location.protocol !== 'file:';   // file:// images would block saving the share card
+function drawMoonDisc(c, m, noPhoto){
+  let g = c.createRadialGradient(m.x, m.y, m.r*0.8, m.x, m.y, m.r*7); g.addColorStop(0, 'rgba(240,230,205,.2)'); g.addColorStop(1, 'rgba(240,230,205,0)');
+  c.fillStyle = g; ell(c, m.x, m.y, m.r*7, m.r*7); c.fill();
+  g = c.createRadialGradient(m.x, m.y, m.r*0.95, m.x, m.y, m.r*2.7);
+  g.addColorStop(0, 'rgba(255,248,228,.32)'); g.addColorStop(0.35, 'rgba(255,248,228,.1)'); g.addColorStop(1, 'rgba(255,248,228,0)');
+  c.fillStyle = g; ell(c, m.x, m.y, m.r*2.7, m.r*2.7); c.fill();
+  if (moonReady && !noPhoto){
+    c.save(); c.beginPath(); c.arc(m.x, m.y, m.r, 0, TAU); c.clip();
+    c.drawImage(moonImg, m.x - m.r*1.01, m.y - m.r*1.01, m.r*2.02, m.r*2.02);
+    c.globalCompositeOperation = 'screen'; c.fillStyle = 'rgba(105,98,82,.62)'; c.fillRect(m.x - m.r, m.y - m.r, m.r*2, m.r*2);   // moonlit brightness
+    c.globalCompositeOperation = 'multiply'; c.fillStyle = '#fff1d2'; c.fillRect(m.x - m.r, m.y - m.r, m.r*2, m.r*2);              // warm tint
+    c.globalCompositeOperation = 'source-over';
+    g = c.createRadialGradient(m.x, m.y, m.r*0.7, m.x, m.y, m.r); g.addColorStop(0, 'rgba(255,250,235,0)'); g.addColorStop(1, 'rgba(255,250,235,.22)');
+    c.fillStyle = g; c.fillRect(m.x - m.r, m.y - m.r, m.r*2, m.r*2);
+    c.restore();
+    return;
+  }
+  g = c.createRadialGradient(m.x - m.r*0.3, m.y - m.r*0.3, m.r*0.1, m.x, m.y, m.r); g.addColorStop(0, '#fffaf0'); g.addColorStop(1, '#e9dfc6');
+  c.fillStyle = g; ell(c, m.x, m.y, m.r, m.r); c.fill();
+  c.fillStyle = 'rgba(150,140,118,.24)';
+  [[-0.3,-0.15,0.28],[0.2,0.1,0.22],[0.05,-0.4,0.15],[-0.1,0.35,0.18],[0.35,-0.3,0.12]].forEach(([dx, dy, rr]) => { ell(c, m.x + dx*m.r, m.y + dy*m.r, rr*m.r, rr*m.r*0.85); c.fill(); });
+}
+/* Night sky painted once into a background: a Milky Way band and a dense field of faint stars.
+   Stars fade near the moon (moonlight washes them out) and near the horizon. */
+const gauss = (rnd) => (rnd() + rnd() + rnd() + rnd() - 2)/2;
+function paintSky(c, w, hz, m, seed, density){
+  const rnd = mulberry(seed);
+  const bx0 = w*0.02, by0 = hz*1.05, bx1 = w*0.66, by1 = -hz*0.15;
+  const len = Math.hypot(bx1 - bx0, by1 - by0), ux = (bx1 - bx0)/len, uy = (by1 - by0)/len, nx = -uy, ny = ux;
+  c.save();
+  c.beginPath(); c.rect(0, 0, w, hz); c.clip();
+  c.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 34; i++){
+    const tt = rnd(), off = gauss(rnd)*hz*0.16;
+    const x = bx0 + ux*len*tt + nx*off, y = by0 + uy*len*tt + ny*off, rr = hz*(0.1 + rnd()*0.17);
+    const g = c.createRadialGradient(x, y, 0, x, y, rr);
+    g.addColorStop(0, rnd() < 0.35 ? 'rgba(255,222,190,.045)' : 'rgba(165,185,255,.05)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = g; c.fillRect(x - rr, y - rr, rr*2, rr*2);
+  }
+  c.globalCompositeOperation = 'source-over';
+  const n = Math.round(w*hz/160*density);
+  for (let i = 0; i < n; i++){
+    let x, y;
+    if (rnd() < 0.5){ const tt = rnd(), off = gauss(rnd)*hz*0.1; x = bx0 + ux*len*tt + nx*off; y = by0 + uy*len*tt + ny*off; }
+    else { x = rnd()*w; y = rnd()*hz; }
+    if (x < 0 || x > w || y < 0 || y > hz) continue;
+    const dm = Math.hypot(x - m.x, y - m.y);
+    const a = (0.16 + rnd()*0.55)*Math.min(1, Math.max(0, (dm - m.r*1.4)/(m.r*4)))*Math.min(1, (hz - y)/(hz*0.22));
+    if (a < 0.03) continue;
+    const r = rnd() < 0.93 ? 0.3 + rnd()*0.45 : 0.75 + rnd()*0.55, tint = rnd();
+    c.fillStyle = 'rgba(' + (tint < 0.6 ? '255,255,255' : tint < 0.83 ? '205,222,255' : '255,230,200') + ',' + a.toFixed(3) + ')';
+    c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
+  }
+  c.restore();
+}
+const starGlow = (() => {
+  const cv = document.createElement('canvas'); cv.width = cv.height = 32;
+  const c = cv.getContext('2d'), g = c.createRadialGradient(16, 16, 0, 16, 16, 16);
+  g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(0.25, 'rgba(210,225,255,.35)'); g.addColorStop(1, 'rgba(210,225,255,0)');
+  c.fillStyle = g; c.fillRect(0, 0, 32, 32); return cv;
+})();
+function buildBackground(){
+  bg.width = canvas.width; bg.height = canvas.height;
+  const c = bgc; c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  let g = c.createLinearGradient(0, 0, 0, HZ); g.addColorStop(0, '#050d18'); g.addColorStop(0.55, '#0b1b2c'); g.addColorStop(1, '#173350');
+  c.fillStyle = g; c.fillRect(0, 0, W, HZ + 1);
+  paintSky(c, W, HZ, moon, 11, 1);
+  c.save(); c.beginPath(); c.rect(0, 0, W, HZ); c.clip(); drawMoonDisc(c, moon); c.restore();
+  g = c.createLinearGradient(0, HZ, 0, H); g.addColorStop(0, '#123049'); g.addColorStop(0.35, '#0c2236'); g.addColorStop(1, '#061320');
+  c.fillStyle = g; c.fillRect(0, HZ, W, H - HZ);
+  drawShore(c, W, HZ, H);
+}
+function seedAmbient(){
+  const rnd = mulberry(42);
+  stars = [];
+  // Twinkling layer on top of the painted sky; the first few are bright stars with light spikes
+  const n = Math.min(260, Math.round(W*HZ/2400));
+  for (let i = 0; i < n; i++){
+    const x = rnd()*W, y = rnd()*HZ*0.86;
+    if (Math.hypot(x - moon.x, y - moon.y) < moon.r*2.8) continue;
+    const big = i < 14, tint = rnd();
+    stars.push({ x, y, big, r:big ? 1.1 + rnd()*0.8 : 0.55 + rnd()*0.8, a:(big ? 0.85 : 0.45 + rnd()*0.45)*Math.min(1, (HZ - y)/(HZ*0.25)),
+      col:tint < 0.6 ? '255,255,255' : tint < 0.82 ? '200,220,255' : '255,228,196', ph:rnd()*TAU, sp:0.5 + rnd()*2.2 });
+  }
+  shoreLights = [];
+  for (let i = 0; i < Math.round(W/38); i++) shoreLights.push({ x:rnd()*W, y:HZ - 1 - rnd()*4, r:0.7 + rnd()*1.1, ph:rnd()*TAU });
+  amb = [];
+  for (let i = 0; i < Math.round(W/12); i++) amb.push({ x:rnd()*W, d:rnd(), ph:rnd()*TAU, len:10 + rnd()*40 });
+}
+function resize(){
+  const r = sceneEl.getBoundingClientRect();
+  W = Math.max(300, r.width); H = Math.max(360, r.height);
+  canvas.width = Math.round(W*DPR); canvas.height = Math.round(H*DPR);
+  HZ = Math.round(H*0.46);
+  SC = Math.max(0.74, Math.min(scr.on ? 1.7 : 1.15, W/1100));
+  POOL = Math.min(poolCap, Math.round(Math.min(60, Math.max(14, W/22))));
+  const mr = Math.max(26, Math.min(W, H)*(scr.on ? 0.1 : 0.085));
+  moon = { x:W*(W < 640 ? 0.85 : 0.78), y:Math.max(mr + 70, H*0.2), r:mr };
+  bottomPad = bottomEl.offsetHeight || 140;
+  $('#boatCard').style.bottom = (Math.max(bottomPad - 24, 90)) + 'px';
+  $('#empty').style.top = Math.round(HZ + (lane().y1 - HZ)*0.45) + 'px';
+  buildBackground(); seedAmbient();
+  for (const b of boats.values()) if (b.x > W + 90) b.x = hash(b.item.k + 'x')*W;
+}
+function lane(){ const y0 = HZ + 16, y1 = Math.max(HZ + 90, H - bottomPad + 24); return { y0, y1 }; }
+function boatGeom(b){ const { y0, y1 } = lane(); return { x:b.x, y:y0 + (y1 - y0)*b.z, s:SC*(0.42 + 0.95*b.z) }; }
+function frontY(){ return lane().y1; }
+function makeBoat(it){
+  return { item:it, x:hash(it.k + 'x')*(W + 160) - 80, z:0.08 + hash(it.k + 'z')*0.84, speed:5 + hash(it.k + 's')*9, seed:hash(it.k + 's')*100, launch:null, born:performance.now() };
+}
+function recycle(b){
+  // A krathong that drifted off the right edge hands its place to the next one in the queue
+  if (!queue.length || b.item.k === selectedK || b.item.k === lastMineK){ b.x = -90; return; }
+  boats.delete(b.item.k);
+  queue.push(b.item);
+  const it = queue.shift(), nb = makeBoat(it);
+  nb.x = -90 - Math.random()*40;
+  boats.set(it.k, nb); shownAt.set(it.k, performance.now());
+}
+function trimPool(){
+  if (boats.size <= POOL) return;
+  const extra = Array.from(boats.values()).filter(b => !b.launch && b.item.k !== selectedK && b.item.k !== lastMineK).sort((a, b) => a.item.at - b.item.at);
+  while (boats.size > POOL && extra.length){ const b = extra.shift(); boats.delete(b.item.k); queue.push(b.item); }
+}
+function chip(text, x, y){
+  ctx.font = '600 12px "IBM Plex Sans Thai Looped", sans-serif';
+  const w = ctx.measureText(text).width + 16, h = 21;
+  ctx.fillStyle = 'rgba(240,161,60,.95)'; rrect(ctx, x - w/2, y - h, w, h, 10.5); ctx.fill();
+  ctx.fillStyle = '#1c1206'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y - h/2 + 1);
+  ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+}
+function drawBoats(dt, now){
+  const list = Array.from(boats.values());
+  for (const b of list){
+    if (b.launch){
+      const p = Math.min(1, (now - b.launch.t0)/2800), e = 1 - Math.pow(1 - p, 3);
+      b.z = b.launch.z0 + (b.launch.z1 - b.launch.z0)*e; b.x = b.launch.x0 + 60*e;
+      if (p >= 1) b.launch = null;
+    } else {
+      b.x += b.speed*(0.35 + b.z)*dt;
+      if (b.x > W + 90) recycle(b);
+    }
+  }
+  const live = Array.from(boats.values()).sort((a, b) => a.z - b.z);
+  for (const b of live){
+    const { x, y, s } = boatGeom(b);
+    if (x < -100 || x > W + 100) continue;
+    const bob = reduceMotion ? 0 : Math.sin(T*1.5 + b.seed)*1.4*s;
+    const tilt = reduceMotion ? 0 : Math.sin(T*1.1 + b.seed*2)*0.035;
+    const gl = TYPES[b.item.t].glow, rgb = gl[0] + ',' + gl[1] + ',' + gl[2];
+    const fade = b.launch ? 1 : Math.min(1, (now - b.born)/900);
+    ctx.globalAlpha = fade;
+    // Blessed krathongs glow wider; a fresh blessing flares briefly
+    if (b.glowBoost) b.glowBoost = Math.max(0, b.glowBoost - dt*0.6);
+    const gs = s*(1 + Math.min(0.7, Math.log2(1 + (blessCount.get(b.item.k) || 0))*0.12) + (b.glowBoost || 0)*0.8);
+    ctx.drawImage(glowSprite(b.item.t), x - 52*gs, y + 3*s - 52*gs*0.32, 104*gs, 104*gs*0.32);
+    for (let i = 0; i < 4; i++){
+      const a = 0.22*(1 - i/4)*(0.6 + 0.4*Math.sin(T*3 + b.seed + i)), ww = (10 - i*2)*s;
+      ctx.fillStyle = 'rgba(' + rgb + ',' + a.toFixed(3) + ')';
+      ctx.fillRect(x - ww/2 + Math.sin(T*2 + i + b.seed)*1.5*s, y + (7 + i*4.5)*s, ww, 1.1*s);
+    }
+    if (b.item.k === selectedK || b.item.k === scr.spotK){
+      const pulse = 0.55 + 0.35*Math.sin(T*4);
+      ctx.strokeStyle = 'rgba(255,216,138,' + pulse.toFixed(2) + ')'; ctx.lineWidth = 1.6; ell(ctx, x, y + 2*s, 38*s, 10*s); ctx.stroke();
+    }
+    ctx.save(); ctx.translate(x, y + bob); ctx.rotate(tilt);
+    const own = b.item.craft ? craftImage(b.item.k) : null;   // a krathong made together at the workshop is drawn from its own picture
+    if (own) ctx.drawImage(own, -30*s, -52*s, 60*s, 60*s);
+    else drawBoatSprite(ctx, b.item.t, s, b.seed);
+    if (b.item.t === 'lantern' && !reduceMotion){ ctx.globalAlpha = fade*(0.25 + 0.2*Math.sin(T*7 + b.seed*9)); ctx.drawImage(flameGlow, -30*s, -46*s, 60*s, 60*s); }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+    if (b.item.k === lastMineK) chip('ของคุณ', x, y - 46*s);
+  }
+}
+const meteors = [];
+let nextMeteor = performance.now() + 5000;
+function drawStars(now, dt){
+  for (const s of stars){
+    const tw = reduceMotion ? 0.85 : 0.6 + 0.4*Math.sin(T*s.sp + s.ph), a = s.a*tw;
+    if (s.big){
+      ctx.globalAlpha = a; ctx.drawImage(starGlow, s.x - 7*s.r, s.y - 7*s.r, 14*s.r, 14*s.r); ctx.globalAlpha = 1;
+      const L = 6*s.r*(0.7 + 0.3*tw);
+      ctx.strokeStyle = 'rgba(' + s.col + ',' + (a*0.55).toFixed(3) + ')'; ctx.lineWidth = 0.6;
+      ctx.beginPath(); ctx.moveTo(s.x - L, s.y); ctx.lineTo(s.x + L, s.y); ctx.moveTo(s.x, s.y - L); ctx.lineTo(s.x, s.y + L); ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(' + s.col + ',' + a.toFixed(3) + ')';
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r*0.6, 0, TAU); ctx.fill();
+  }
+  // An occasional shooting star
+  if (!reduceMotion && now > nextMeteor){
+    meteors.push({ x:W*(0.08 + Math.random()*0.6), y:HZ*(0.05 + Math.random()*0.3), vx:420 + Math.random()*220, vy:150 + Math.random()*90, life:0, max:0.8 + Math.random()*0.4 });
+    nextMeteor = now + 6000 + Math.random()*10000;
+  }
+  for (let i = meteors.length - 1; i >= 0; i--){
+    const m = meteors[i]; m.life += dt; m.x += m.vx*dt*SC; m.y += m.vy*dt*SC;
+    if (m.life >= m.max || m.y > HZ - 12){ meteors.splice(i, 1); continue; }
+    const a = Math.sin(Math.PI*m.life/m.max), tx = m.x - m.vx*0.16*SC, ty = m.y - m.vy*0.16*SC;
+    const g = ctx.createLinearGradient(m.x, m.y, tx, ty); g.addColorStop(0, 'rgba(255,250,235,' + (0.9*a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,250,235,0)');
+    ctx.strokeStyle = g; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.lineCap = 'butt';
+  }
+}
+function drawMoonPath(){
+  const depth = H - HZ, tt = reduceMotion ? T*0.2 : T;
+  for (let y = HZ + 3; y < H; y += 2 + (y - HZ)/depth*5){
+    const d = (y - HZ)/depth;
+    const wv = (6 + d*W*0.05)*(0.55 + 0.45*Math.sin(tt*1.7 + y*0.21));
+    const off = Math.sin(tt*0.9 + y*0.07)*(3 + d*10);
+    const a = 0.42*(1 - d*0.7)*(0.6 + 0.4*Math.sin(tt*2.6 + y*0.5));
+    ctx.fillStyle = 'rgba(244,236,214,' + a.toFixed(3) + ')';
+    ctx.fillRect(moon.x - wv/2 + off, y, wv, 1 + d*1.6);
+  }
+}
+function drawAmbient(dt){
+  for (const a of amb){
+    const y = HZ + (H - HZ)*Math.pow(a.d, 1.35);
+    a.x += (3 + a.d*16)*dt; if (a.x > W + 60) a.x = -60;
+    const al = (0.04 + 0.1*a.d)*(0.5 + 0.5*Math.sin(T*0.8 + a.ph));
+    ctx.fillStyle = 'rgba(200,220,235,' + al.toFixed(3) + ')';
+    ctx.fillRect(a.x, y, a.len*(0.4 + a.d), 1 + a.d);
+  }
+}
+function releaseLantern(x, y, quiet){
+  if (lanterns.length > 90) lanterns.shift();
+  lanterns.push({ x, y, vy:16 + Math.random()*12, s:SC*(0.9 + Math.random()*0.5), seed:Math.random()*100, age:0 });
+  if (!quiet){ chime(1175, 0.05); chime(1568, 0.03, 0.09); }
+}
+function drawLanterns(dt){
+  for (let i = lanterns.length - 1; i >= 0; i--){
+    const L = lanterns[i];
+    L.age += dt; L.y -= L.vy*dt*(reduceMotion ? 0.5 : 1); L.x += Math.sin(T*0.6 + L.seed)*8*dt; L.s *= 1 - 0.02*dt;
+    if (L.y < -40 || L.age > 45){ lanterns.splice(i, 1); continue; }
+    const a = Math.min(1, L.age*2)*Math.max(0, Math.min(1, (L.y + 20)/(HZ*0.35)));
+    drawSkyLantern(ctx, L.x, L.y, L.s, a, T, L.seed);
+  }
+}
+function addRing(x, y, s){ rings.push({ x, y, s:s || 1, t0:performance.now() }); if (rings.length > 20) rings.shift(); }
+function drawRings(now){
+  for (let i = rings.length - 1; i >= 0; i--){
+    const r = rings[i], p = (now - r.t0)/1800;
+    if (p >= 1){ rings.splice(i, 1); continue; }
+    const rad = (6 + 70*p)*r.s;
+    ctx.strokeStyle = 'rgba(230,240,245,' + (0.45*(1 - p)).toFixed(3) + ')'; ctx.lineWidth = 1.2;
+    ell(ctx, r.x, r.y, rad, rad*0.28); ctx.stroke();
+  }
+}
+/* ลอยทุกข์: the worry becomes a faint, blurred shadow of letters lying on the water beside the new
+   krathong, then drifts away with the current toward the far bank and fades. It is never stored. */
+function addLetgo(text){ letgos.push({ gs:graphemes(text), t0:performance.now(), x:W/2 - 10, z:0.97, seed:Math.random()*10, w:0 }); }
+function drawLetgos(now, dt){
+  const dur = reduceMotion ? 9 : 16, OFF = 10000;
+  for (let i = letgos.length - 1; i >= 0; i--){
+    const L = letgos[i], a = (now - L.t0)/1000;
+    L.z = Math.max(0.3, L.z - dt*0.022);                               // slowly out toward the far bank
+    L.x += (10 + 16*L.z)*SC*dt*(reduceMotion ? 0.4 : 1);               // carried right, like the krathongs
+    if (a > dur || L.x - L.w/2 > W + 20){ letgos.splice(i, 1); continue; }
+    const { y0, y1 } = lane(), s = SC*(0.42 + 0.95*L.z), y = y0 + (y1 - y0)*L.z + 16*s;
+    const fadeIn = Math.min(1, a/1.5), fadeOut = Math.min(1, Math.max(0, (dur - a)/6)), alpha = 0.2*fadeIn*fadeOut;
+    const loosen = Math.max(0, a - (dur - 6))*0.9*s;                    // letters drift apart as it dissolves
+    ctx.save();
+    ctx.font = '400 ' + Math.round(24*s + 6) + 'px Mitr, "Leelawadee UI", sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    const widths = L.gs.map(g => ctx.measureText(g).width); L.w = widths.reduce((p, c) => p + c, 0);
+    ctx.translate(L.x, y); ctx.scale(1, 0.62);                         // lying flat on the water
+    // Only the blurred shadow is visible: the glyphs themselves are drawn far off-canvas
+    ctx.fillStyle = '#000'; ctx.shadowOffsetX = OFF*DPR; ctx.shadowOffsetY = 0;
+    for (const pass of [[1, 2 + 1.5*s + 3.5*(1 - fadeOut)], [0.35, 5 + 3.5*s]]){
+      ctx.shadowColor = 'rgba(214,228,242,' + (alpha*pass[0]).toFixed(3) + ')';
+      ctx.shadowBlur = pass[1]*DPR;
+      let cx = -L.w/2;
+      for (let j = 0; j < L.gs.length; j++){
+        const wob = Math.sin(T*1.7 + j*0.65 + L.seed)*2.6*s, sway = Math.sin(T*1.1 + j*0.9 + L.seed)*1.2*s;
+        ctx.fillText(L.gs[j], cx + sway + (j - (L.gs.length - 1)/2)*loosen - OFF, wob);
+        cx += widths[j];
+      }
+    }
+    ctx.restore();
+  }
+}
+function hitTest(px, py){
+  const list = Array.from(boats.values()).sort((a, b) => b.z - a.z);
+  for (const b of list){ const { x, y, s } = boatGeom(b); if (Math.abs(px - x) < 34*s + 6 && py > y - 46*s && py < y + 12*s) return b; }
+  return null;
+}
+canvas.addEventListener('click', (e) => {
+  const r = canvas.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  const hit = hitTest(px, py);
+  if (hit){ selectBoat(hit.item.k); return; }
+  if (py < HZ){ releaseLantern(px, py); return; }
+  const { y0, y1 } = lane(), z = Math.max(0, Math.min(1, (py - y0)/(y1 - y0)));
+  addRing(px, py, SC*(0.42 + 0.95*z)); closeCard();
+});
+
+/* ---------------- maker preview ---------------- */
+const pv = $('#preview'), pvc = pv.getContext('2d');
+let PW = 0, PH = 0, pvVisible = false;
+function sizePreview(){ const r = pv.getBoundingClientRect(); PW = r.width; PH = r.height; pv.width = Math.round(PW*DPR); pv.height = Math.round(PH*DPR); buildPreviewSky(); }
+let pvSky = null;
+function buildPreviewSky(){
+  if (!PW || !PH) return;
+  pvSky = document.createElement('canvas'); pvSky.width = Math.round(PW*DPR); pvSky.height = Math.round(PH*DPR);
+  const c = pvSky.getContext('2d'); c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const hz = PH*0.34, pm = { x:PW*0.8, y:hz*0.48, r:hz*0.2 };
+  let g = c.createLinearGradient(0, 0, 0, hz); g.addColorStop(0, '#050d18'); g.addColorStop(1, '#16324d'); c.fillStyle = g; c.fillRect(0, 0, PW, hz);
+  paintSky(c, PW, hz, pm, 5, 1.6);
+  c.save(); c.beginPath(); c.rect(0, 0, PW, hz); c.clip(); drawMoonDisc(c, pm); c.restore();
+  g = c.createLinearGradient(0, hz, 0, PH); g.addColorStop(0, '#123049'); g.addColorStop(1, '#071522'); c.fillStyle = g; c.fillRect(0, hz, PW, PH - hz);
+}
+function drawPreview(){
+  if (!pvVisible || !PW) return;
+  const c = pvc; c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const hz = PH*0.34, tt = reduceMotion ? T*0.2 : T;
+  if (!pvSky) buildPreviewSky();
+  c.drawImage(pvSky, 0, 0, PW, PH);
+  const mx = PW*0.8;
+  for (let y = hz + 2; y < PH; y += 3 + (y - hz)/(PH - hz)*4){
+    const d = (y - hz)/(PH - hz), w = (5 + d*30)*(0.55 + 0.45*Math.sin(tt*1.7 + y*0.3));
+    c.fillStyle = 'rgba(244,236,214,' + (0.3*(1 - d*0.6)).toFixed(3) + ')';
+    c.fillRect(mx - w/2 + Math.sin(tt + y*0.1)*4, y, w, 1.2);
+  }
+  const s = Math.min(PW/88, PH/64), y = PH*0.74 + (reduceMotion ? 0 : Math.sin(T*1.5)*0.8*s);
+  c.drawImage(glowSprite(currentType), PW/2 - 50*s, y - 12*s, 100*s, 30*s);
+  c.save(); c.translate(PW/2, y); c.rotate(reduceMotion ? 0 : Math.sin(T*1.1)*0.03);
+  drawBoatSprite(c, currentType, s, 4, true);
+  c.restore();
+}
+
+/* ---------------- main loop ---------------- */
+let frameId = null, nextPaint = 0;
+const saverFrameMs = 1000/30;
+function updateAnimation(){
+  if (document.hidden || (!sceneVisible && !pvVisible)){
+    if (frameId !== null) cancelAnimationFrame(frameId);
+    frameId = null;
+  } else if (frameId === null){
+    last = performance.now(); nextPaint = last; frameEma = 16; slowFor = 0;
+    frameId = requestAnimationFrame(frame);
+  }
+}
+function frame(now){
+  frameId = requestAnimationFrame(frame);
+  if (powerSaving && now + 0.5 < nextPaint) return;
+  if (powerSaving) nextPaint = now + saverFrameMs - Math.max(0, (now - nextPaint) % saverFrameMs);
+  const dt = Math.max(0, Math.min(0.05, (now - last)/1000)); last = now; T += dt;
+  const flow = reduceMotion ? 0.3 : 1;
+  // Adaptive load: if frames stay slow (under ~33 fps) for 3 s, show fewer krathongs at once
+  frameEma = frameEma*0.95 + dt*1000*0.05;
+  if (frameEma > (powerSaving ? 45 : 30) && sceneVisible){ slowFor += dt; if (slowFor > 3 && poolCap > 12){ poolCap = Math.max(12, Math.round(boats.size*0.75)); POOL = Math.min(POOL, poolCap); trimPool(); slowFor = 0; } }
+  else slowFor = 0;
+  if (sceneVisible && W){
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.drawImage(bg, 0, 0, W, H);
+    drawStars(now, dt);
+    for (const l of shoreLights){ const a = 0.5 + 0.4*Math.sin(T*2.3 + l.ph); ctx.fillStyle = 'rgba(255,196,120,' + a.toFixed(3) + ')'; ell(ctx, l.x, l.y, l.r, l.r); ctx.fill(); }
+    drawMoonPath(); drawAmbient(dt*flow);
+    drawLanterns(dt);
+    drawBoats(dt*flow, now);
+    drawRings(now); drawLetgos(now, dt); drawSparks(dt);
+  }
+  drawPreview();
+}
+
+/* ---------------- sound ---------------- */
+const player = $('#festivalPlayer'), musicBtn = $('#musicBtn'), musicSwitch = $('#sndMusic');
+const musicName = $('#musicName'), musicFile = $('#musicFile'), resetMusic = $('#resetMusic');
+const festivalTrack = { url:'assets/Riverbound_Lights.mp3', name:musicName.textContent };
+let eventTrack = festivalTrack, localTrack = null, musicOn = false, playRequest = 0;
+let AC = null;
+player.volume = 0.7;
+
+function chime(freq, vol, delay){
+  if (!musicOn || !AC || AC.state !== 'running') return;
+  const t0 = AC.currentTime + (delay || 0);
+  [[freq, vol], [freq*2.01, vol*0.3]].forEach(([f, v]) => {
+    const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(v, t0 + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.6);
+    o.connect(g); g.connect(AC.destination); o.start(t0); o.stop(t0 + 2.7);
+  });
+}
+
+const soundBtn = $('#soundBtn'), soundPanel = $('#soundPanel');
+function setSoundPanel(open){
+  soundPanel.hidden = !open;
+  soundBtn.setAttribute('aria-expanded', String(open));
+}
+const powerSave = $('#powerSave');
+powerSave.checked = powerSaving;
+powerSave.addEventListener('change', () => {
+  powerSaving = powerSave.checked;
+  try { localStorage.setItem('e-kratong.powerSave', powerSaving ? '1' : '0'); } catch (e) {}
+  DPR = pixelRatio(); nextPaint = performance.now(); slowFor = 0;
+  sprites.clear(); previewSprite = null; resize(); sizePreview();
+});
+soundBtn.addEventListener('click', () => setSoundPanel(soundPanel.hidden));
+document.addEventListener('click', (e) => {
+  if (!soundPanel.hidden && !soundPanel.contains(e.target) && !soundBtn.contains(e.target)) setSoundPanel(false);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !soundPanel.hidden){ setSoundPanel(false); soundBtn.focus(); }
+});
+
+function renderMusic(){
+  const title = (localTrack || eventTrack).name;
+  const action = musicOn ? 'พักเพลง' : 'เปิดเพลง';
+  $('#musicAction').textContent = action;
+  musicBtn.title = action + ' ' + title;
+  musicBtn.setAttribute('aria-pressed', String(musicOn));
+  musicSwitch.checked = musicOn;
+  musicName.textContent = title;
+  resetMusic.hidden = !localTrack;
+}
+
+function pauseMusic(){
+  playRequest++;
+  musicOn = false;
+  player.pause();
+  if (AC) AC.suspend().catch(() => {});
+  renderMusic();
+}
+
+function clearLocalTrack(){
+  if (localTrack) URL.revokeObjectURL(localTrack.url);
+  localTrack = null;
+  musicFile.value = '';
+}
+
+function handleMusicError(error, request){
+  if (request !== playRequest || !musicOn) return;
+  if (error.name === 'AbortError' || error.code === 1){ pauseMusic(); return; }
+  if (error.name === 'NotAllowedError'){
+    pauseMusic(); showToast('แตะเปิดเพลงอีกครั้งเพื่อเริ่มเล่น'); return;
+  }
+  if (localTrack || eventTrack !== festivalTrack){
+    if (localTrack) clearLocalTrack(); else eventTrack = festivalTrack;
+    showToast('เปิดไฟล์เพลงนี้ไม่ได้ เปลี่ยนเป็น ' + eventTrack.name);
+    startMusic();
+  } else {
+    pauseMusic();
+    setSoundPanel(true);
+    showToast('เปิดเพลงของงานไม่ได้ เลือกไฟล์เพลงจากเครื่องนี้ได้ในตั้งค่า');
+  }
+}
+
+function startMusic(){
+  const request = ++playRequest, track = localTrack || eventTrack;
+  const Context = window.AudioContext || window.webkitAudioContext;
+  if (Context && !AC){ try { AC = new Context(); } catch (e) {} }
+  musicOn = true;
+  renderMusic();
+  if (AC) AC.resume().catch(() => {});
+  if (player.getAttribute('src') !== track.url || player.error) player.src = track.url;
+  player.play().catch((error) => handleMusicError(error, request));
+}
+
+function refreshSelectedTrack(){
+  if (musicOn) startMusic(); else renderMusic();
+}
+player.addEventListener('error', () => {
+  if (player.error) handleMusicError(player.error, playRequest);
+});
+player.addEventListener('play', () => {
+  if (!musicOn && !player.paused) startMusic();
+});
+player.addEventListener('pause', () => {
+  if (musicOn && player.paused && !player.error) pauseMusic();
+});
+musicBtn.addEventListener('click', () => { if (musicOn) pauseMusic(); else startMusic(); });
+musicSwitch.addEventListener('change', () => { if (musicSwitch.checked) startMusic(); else pauseMusic(); });
+musicFile.addEventListener('change', () => {
+  const file = musicFile.files[0]; if (!file) return;
+  clearLocalTrack();
+  localTrack = { url:URL.createObjectURL(file), name:file.name };
+  startMusic();
+});
+resetMusic.addEventListener('click', () => {
+  clearLocalTrack(); refreshSelectedTrack(); musicFile.focus();
+});
+renderMusic();
+
+/* ---------------- state & sync ---------------- */
+let mode = 'loading';
+let db = null, uid = null, isOwner = false, downloadsNs = null;
+const local = loadLocal();
+const shared = { items:[], count:0, capped:false, pledgeTotal:0, pledgePeople:0, loaded:false };
+const myDoc = { items:[], pledges:[], loaded:false };
+let pendingPledges = null;
+
+let knownShared = null;   // keys already seen, to spot krathongs that just arrived from other people
+function allItems(){
+  const loc = local.items.map(i => Object.assign({}, i, { owner:'local' }));
+  const list = mode === 'shared' ? shared.items : mode === 'readonly' ? shared.items.concat(loc) : mode === 'local' ? loc : [];
+  return hiddenKeys.size ? list.filter(i => !hiddenKeys.has(i.k)) : list;
+}
+function setOnline(n){
+  if (n === null){ $('#onlineStat').hidden = true; return; }   // server not counting (log served by nginx/CDN)
+  if (typeof n !== 'number' || !isFinite(n)) return;
+  $('#statOnline').textContent = Math.max(0, Math.round(n)).toLocaleString('th-TH');
+  $('#onlineStat').hidden = backend !== 'server';
+}
+function isMine(it){ return it.owner === 'local' || (uid && it.owner === uid); }
+function myPledges(){ return mode === 'shared' ? (pendingPledges || myDoc.pledges) : local.pledges; }
+
+function countAll(){
+  if (mode === 'shared') return shared.count;
+  if (mode === 'readonly') return shared.count + local.items.length;
+  if (mode === 'local') return local.items.length;
+  return 0;
+}
+function syncBoats(){
+  const items = allItems(), byK = new Map();
+  for (const it of items) byK.set(it.k, it);
+  for (const [k, b] of boats){ const it = byK.get(k); if (it) b.item = it; else if (!b.launch) boats.delete(k); }
+  for (const k of Array.from(shownAt.keys())) if (!byK.has(k)) shownAt.delete(k);
+  if (backend === 'server') for (const k of Array.from(blessCount.keys())) if (!byK.has(k)) blessCount.delete(k);
+  // Queue order: never-shown krathongs first (newest first), then the ones that passed longest ago
+  queue = items.filter(it => !boats.has(it.k)).sort((a, b) => {
+    const sa = shownAt.get(a.k), sb = shownAt.get(b.k);
+    if (sa == null && sb == null) return b.at - a.at;
+    if (sa == null) return -1; if (sb == null) return 1;
+    return sa - sb;
+  });
+  while (boats.size < POOL && queue.length){ const it = queue.shift(); boats.set(it.k, makeBoat(it)); shownAt.set(it.k, performance.now()); }
+  trimPool();
+  const n = countAll();
+  $('#statCount').textContent = n.toLocaleString('th-TH') + (shared.capped && mode !== 'local' ? '+' : '');
+  $('#liveCount').textContent = n.toLocaleString('th-TH');
+  $('#empty').hidden = !(mode !== 'loading' && n === 0);
+  if (selectedK && !boats.has(selectedK)) closeCard();
+}
+const MODE_TEXT = {
+  loading:['กำลังเชื่อมต่อสายน้ำ…', 'กำลังเชื่อมต่อสายน้ำ…'],
+  shared:['สายน้ำร่วม · ทุกคนที่เปิดหน้านี้เห็นกระทงของกันและกัน', 'กระทงของคุณจะลอยในสายน้ำเดียวกับทุกคนที่เปิดหน้านี้'],
+  readonly:['ดูสายน้ำร่วมได้ · กระทงของคุณลอยเฉพาะในเครื่องนี้', 'บัญชีนี้ดูได้อย่างเดียว กระทงของคุณจึงบันทึกไว้ในเครื่องนี้ ถ้าอยากลอยร่วมกับทุกคน ขอสิทธิ์ผู้ร่วมใช้งาน (Contributor) จากเจ้าของหน้า'],
+  local:['โหมดเครื่องนี้ · กระทงบันทึกในเบราว์เซอร์ของคุณ', 'กระทงของคุณจะบันทึกไว้ในเบราว์เซอร์เครื่องนี้']
+};
+function setMode(m){ mode = m; updateModeUI(); syncBoats(); renderPledges(); }
+function updateModeUI(){
+  const t = MODE_TEXT[mode] || MODE_TEXT.loading;
+  $('#statusText').textContent = t[0]; $('#modeNote').textContent = t[1];
+  $('#statusDot').className = 'dot' + (mode === 'shared' ? ' on' : '');
+}
+
+function subscribe(){
+  const timer = setTimeout(() => { if (!shared.loaded) $('#statusText').textContent = 'ยังเชื่อมต่อสายน้ำร่วมไม่ได้ กำลังลองต่อ…'; }, 10000);
+  // Read only people active in the last 48 hours, newest first, at most READ_DOCS of them
+  const since = Date.now() - WINDOW_MS;
+  db.collection('krathongs').where('updatedAt', '>=', since).orderBy('updatedAt', 'desc').limit(READ_DOCS).onSnapshot((snap) => {
+    if (!snap.metadata.fromCache){ clearTimeout(timer); if (!shared.loaded){ shared.loaded = true; updateModeUI(); } }
+    const river = []; let count = 0, total = 0, people = 0, mine = null;
+    for (const d of snap.docs){
+      const data = d.data() || {};
+      const arr = Array.isArray(data.items) ? data.items.slice(0, MAX_MINE) : [];
+      const cleaned = arr.map(i => cleanItem(i, d.id)).filter(Boolean);
+      const fresh = cleaned.filter(i => i.at >= since).sort((a, b) => b.at - a.at);
+      count += fresh.length;
+      for (const c of fresh.slice(0, SHOW_PER_PERSON)) river.push(c);
+      const pl = cleanPledges(data.pledges);
+      if (pl.length){ total += pl.length; people++; }
+      if (uid && d.id === uid) mine = { items:cleaned.map(stripItem), pledges:pl };
+    }
+    if (knownShared && !snap.metadata.fromCache) onArrivals(river.filter(i => !knownShared.has(i.k)));
+    if (!snap.metadata.fromCache) knownShared = new Set(river.map(i => i.k));
+    shared.items = river; shared.count = count; shared.capped = snap.size >= READ_DOCS;
+    shared.pledgeTotal = total; shared.pledgePeople = people;
+    if (mine){ myDoc.items = mine.items; myDoc.pledges = mine.pledges; myDoc.loaded = true; if (!lastMineK && mine.items[0]) lastMineK = mine.items[0].k; }
+    syncBoats(); renderPledges();
+  }, () => { clearTimeout(timer); setMode('local'); });
+}
+function myRef(){ return db.collection('krathongs').doc(uid); }
+async function ensureMyDoc(){
+  if (myDoc.loaded) return;
+  const s = await myRef().get();
+  const d = s.exists ? (s.data() || {}) : {};
+  myDoc.items = (Array.isArray(d.items) ? d.items : []).map(i => cleanItem(i, uid)).filter(Boolean).map(stripItem);
+  myDoc.pledges = cleanPledges(d.pledges); myDoc.loaded = true;
+}
+let chain = Promise.resolve();
+function writeMine(){
+  const body = { items:myDoc.items.slice(0, MAX_MINE).map(stripItem), pledges:(pendingPledges || myDoc.pledges).slice(), updatedAt:Date.now() };
+  const run = async () => {
+    try { await myRef().set(body); }
+    catch (e){ if (e && e.code === 'unavailable'){ await sleep(400 + Math.random()*600); await myRef().set(body); } else throw e; }
+  };
+  const p = chain.then(run);
+  chain = p.catch(() => {});
+  return p;
+}
+function writeFailed(err){
+  const full = err && err.code === 'quota_exceeded';
+  setMode('readonly');
+  showToast(full ? 'สายน้ำร่วมเต็มแล้ว กระทงของคุณบันทึกไว้ในเครื่องนี้แทน' : 'ลอยในสายน้ำร่วมไม่สำเร็จ กระทงของคุณบันทึกไว้ในเครื่องนี้แทน');
+}
+
+/* ---------------- own-server backend (server.js) ---------------- */
+const SRV = { token:null, admin:null, windowMs:WINDOW_MS, perPerson:SHOW_PER_PERSON, riverSize:300, skew:0, memToken:null };
+function clientToken(){
+  try {
+    let t = localStorage.getItem('e-kratong.token');
+    if (!t || !/^[A-Za-z0-9_-]{16,128}$/.test(t)){ t = newId() + newId() + newId(); localStorage.setItem('e-kratong.token', t); }
+    return t;
+  } catch (e){ return SRV.memToken || (SRV.memToken = newId() + newId() + newId()); }
+}
+async function api(method, url, body){
+  const headers = { 'X-Client-Token':SRV.token };
+  if (SRV.admin) headers['X-Admin-Token'] = SRV.admin;
+  if (body) headers['Content-Type'] = 'application/json';
+  const r = await fetch(url, { method, headers, body:body ? JSON.stringify(body) : undefined, cache:'no-store' });
+  let data = null; try { data = await r.json(); } catch (e) {}
+  if (!r.ok){ const code = (data && data.error) || ('http_' + r.status); throw Object.assign(new Error(code), { code, status:r.status }); }
+  return data;
+}
+function capRiver(items){
+  const cut = Date.now() + SRV.skew - SRV.windowMs, per = new Map(), out = [];
+  if (!SRV.riverSize || !SRV.perPerson) return out;
+  for (const it of items.slice().sort((a, b) => b.at - a.at)){
+    if (it.at < cut) continue;
+    const n = per.get(it.owner) || 0; if (n >= SRV.perPerson) continue;
+    per.set(it.owner, n + 1); out.push(it);
+    if (out.length >= SRV.riverSize) break;
+  }
+  return out;
+}
+const fromServer = (i) => cleanItem(i, (i && typeof i.o === 'string') ? i.o : '?');
+function applyServerSnapshot(items){
+  shared.items = capRiver(items.map(fromServer).filter(Boolean));
+  for (const it of shared.items) blessCount.set(it.k, it.b);
+  if (selectedK) refreshCardBless();
+  shared.loaded = true;
+  if (!lastMineK && uid){ const m = shared.items.find(i => i.owner === uid); if (m) lastMineK = m.k; }
+}
+function applyServerBatch(d, quiet){
+  const added = Array.isArray(d.added) ? d.added.map(fromServer).filter(Boolean) : [];
+  const removed = new Set(Array.isArray(d.removed) ? d.removed.filter(k => typeof k === 'string') : []);
+  const have = new Set(shared.items.map(i => i.k));
+  const incoming = added.filter(it => !removed.has(it.k));
+  const fresh = incoming.filter(it => !have.has(it.k));
+  const replaced = new Set(incoming.map(it => it.k));
+  for (const it of incoming) blessCount.set(it.k, it.b);
+  // The log is in insertion order. Newer inserts win ties within the same millisecond.
+  const existing = shared.items.filter(it => !removed.has(it.k) && !replaced.has(it.k));
+  shared.items = capRiver(incoming.reverse().concat(existing));
+  if (d.blessed && typeof d.blessed === 'object'){
+    for (const k of Object.keys(d.blessed)){
+      const n = Number(d.blessed[k]); if (!KEY_OK.test(k) || !isFinite(n)) continue;
+      const prev = blessCount.get(k) || 0; blessCount.set(k, n);
+      if (n > prev && !quiet) sparkle(k);
+    }
+    if (selectedK && Object.prototype.hasOwnProperty.call(d.blessed, selectedK)) refreshCardBless();
+  }
+  if (!quiet) onArrivals(fresh);
+}
+const KEY_OK = /^[A-Za-z0-9_-]{4,24}$/;
+
+/* Event-log sync. The server only appends changes to /log/ (immutable, cacheable files).
+   This device polls the tiny head.json, downloads only segments it has not seen, and builds the
+   river itself. A hidden tab stops polling; a quiet river is polled a little less often. */
+const LOGC = { reader:null, etag:null, timer:null, delay:2500, busy:false, failed:false };
+async function fetchHead(force){
+  const r = await fetch('/log/head.json', { cache:'no-cache' });
+  if (!r.ok) throw Object.assign(new Error('head ' + r.status), { status:r.status });
+  const d = Date.parse(r.headers.get('Date') || ''); if (isFinite(d)) SRV.skew = d - Date.now();
+  const et = r.headers.get('ETag');
+  if (!force && et && et === LOGC.etag) return null;   // nothing new
+  const h = await r.json();
+  LOGC.etag = et;
+  return h;
+}
+async function getLog(name){
+  const r = await fetch('/log/' + name);
+  if (!r.ok) throw Object.assign(new Error('log ' + r.status), { status:r.status });
+  return r.json();
+}
+async function syncHead(h){
+  if (typeof h.windowHours === 'number' && h.windowHours > 0) SRV.windowMs = h.windowHours*3600e3;
+  if (Number.isInteger(h.riverSize) && h.riverSize >= 0) SRV.riverSize = h.riverSize;
+  if (Number.isInteger(h.perPerson) && h.perPerson >= 0) SRV.perPerson = h.perPerson;
+  await LOGC.reader.sync(h);
+  if (typeof h.count === 'number') shared.count = h.count;
+  if (h.pledges){ shared.pledgeTotal = Number(h.pledges.total) || 0; shared.pledgePeople = Number(h.pledges.people) || 0; }
+  setOnline(h.online);
+  setMoments(h.moments);
+  if (typeof h.momentAt === 'number' && h.momentAt > 0) manualMomentAt = h.momentAt;
+  syncBoats(); renderPledges();
+}
+function applyEvents(evs, quiet){
+  const batch = { added:[], removed:[], blessed:{} };
+  for (const ev of Array.isArray(evs) ? evs : []){
+    if (!ev || typeof ev !== 'object') continue;
+    if (ev.e === 'k') batch.added.push(ev);
+    else if (ev.e === 'x' && typeof ev.k === 'string') batch.removed.push(ev.k);
+    else if (ev.e === 'b' && typeof ev.k === 'string' && typeof ev.b === 'number') batch.blessed[ev.k] = ev.b;
+  }
+  applyServerBatch(batch, quiet);
+}
+async function pollLog(){
+  if (LOGC.busy || backend !== 'server') return;
+  LOGC.busy = true;
+  try {
+    const h = await fetchHead(false);
+    if (h){
+      await syncHead(h);
+      LOGC.delay = scr.on ? 2000 : 2500;
+    } else LOGC.delay = Math.min(LOGC.delay + 500, scr.on ? 3000 : 6000);
+    if (LOGC.failed){ LOGC.failed = false; updateModeUI(); }
+  } catch (e){
+    LOGC.etag = null;                                    // fetch head in full next time
+    LOGC.failed = true; $('#statusText').textContent = 'กำลังเชื่อมต่อสายน้ำใหม่…';
+    LOGC.delay = Math.min(Math.max(LOGC.delay, 2500)*1.6, 20000);
+  } finally { LOGC.busy = false; scheduleLog(); }
+}
+function scheduleLog(){
+  clearTimeout(LOGC.timer);
+  if (document.hidden || backend !== 'server') return;
+  LOGC.timer = setTimeout(pollLog, LOGC.delay);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && backend === 'server'){ LOGC.delay = 0; scheduleLog(); } });
+
+async function initServer(){
+  SRV.token = clientToken();
+  let h;
+  try { h = await fetchHead(true); } catch (e){ return false; }
+  if (!h || h.v !== 1) return false;
+  const { RiverLog } = await import('./assets/river-log.mjs');
+  LOGC.reader = new RiverLog(getLog, applyServerSnapshot, applyEvents);
+  backend = 'server'; $('#workshopLink').hidden = false;
+  try { SRV.admin = localStorage.getItem('e-kratong.admin') || null; } catch (e) {}
+  try {
+    const cfg = await api('GET', '/api/config');
+    if (cfg && typeof cfg.joinUrl === 'string') scr.joinUrl = cfg.joinUrl;
+    if (cfg && cfg.music && typeof cfg.music.url === 'string'){
+      eventTrack = { url:cfg.music.url, name:String(cfg.music.name || 'เพลงของงาน').slice(0, 100) };
+      if (!localTrack) refreshSelectedTrack();
+    }
+  } catch (e) {}
+  try {
+    const me = await api('GET', '/api/me');
+    uid = typeof me.me === 'string' ? me.me : null; isOwner = !!me.admin;
+    myDoc.pledges = cleanPledges(me.pledges); myDoc.loaded = true;
+  } catch (e) {}
+  try { await syncHead(h); } catch (e){ LOGC.etag = null; }
+  setMode(uid ? 'shared' : 'readonly');
+  scheduleLog();
+  return true;
+}
+
+/* One interface over both shared backends */
+const backendApi = {
+  artifact: {
+    async launch(item){
+      const before = myDoc.items.slice();
+      try { await ensureMyDoc(); myDoc.items = [item].concat(myDoc.items.filter(i => i.k !== item.k)).slice(0, MAX_MINE); await writeMine(); return item; }
+      catch (e){ myDoc.items = before; throw e; }
+    },
+    async remove(it){
+      if (it.owner === uid){ await ensureMyDoc(); myDoc.items = myDoc.items.filter(i => i.k !== it.k); await writeMine(); return; }
+      const ref = db.collection('krathongs').doc(it.owner), s = await ref.get();
+      if (s.exists){ const d = s.data() || {}; await ref.update({ items:(Array.isArray(d.items) ? d.items : []).filter(i => !(i && i.k === it.k)) }); }
+    },
+    async savePledges(){ await writeMine(); },
+    async bless(it){
+      // bless/<krathong key> holds { by: { <viewer id>: 1 } }: each person adds only their own key
+      const ref = db.collection('bless').doc(it.k), body = { by:{ [uid]:1 }, last:Date.now() };
+      try { await ref.update(body); }
+      catch (e){ if (e && e.code === 'invalid_argument') await ref.set(body); else throw e; }
+      return null;
+    },
+    async moment(sec){ const at = Date.now() + sec*1000; await db.doc('moment/now').set({ at }); manualMomentAt = at; }
+  },
+  server: {
+    async launch(item){
+      const r = await api('POST', '/api/krathongs', { k:item.k, t:item.t, w:item.w, n:item.n, p:item.p });
+      const saved = r && fromServer(r.item); if (!saved) throw new Error('bad_response');
+      return saved;
+    },
+    async remove(it){ await api('DELETE', '/api/krathongs/' + encodeURIComponent(it.k)); shared.items = shared.items.filter(i => i.k !== it.k); },
+    async savePledges(arr){ await api('PUT', '/api/pledges', { pledges:arr }); },
+    async bless(it){ const r = await api('POST', '/api/krathongs/' + encodeURIComponent(it.k) + '/bless'); return r && typeof r.b === 'number' ? r.b : null; },
+    async report(it){ await api('POST', '/api/krathongs/' + encodeURIComponent(it.k) + '/report'); },
+    async moment(sec){ const r = await api('POST', '/api/moment', { inSec:sec }); if (r && typeof r.at === 'number') manualMomentAt = r.at; }
+  }
+};
+function subscribeBless(){
+  let first = true;
+  const since = Date.now() - WINDOW_MS;
+  db.collection('bless').where('last', '>=', since).orderBy('last', 'desc').limit(300).onSnapshot((snap) => {
+    for (const d of snap.docs){
+      if (!KEY_OK.test(d.id)) continue;
+      const data = d.data() || {}, by = (data.by && typeof data.by === 'object') ? data.by : {};
+      const n = Math.min(1e6, Object.keys(by).length), prev = blessCount.get(d.id) || 0;
+      blessCount.set(d.id, n);
+      if (!first && n > prev) sparkle(d.id);
+      if (uid && by[uid]) blessedByMe.add(d.id);
+    }
+    if (!snap.metadata.fromCache) first = false;
+    refreshCardBless();
+  }, () => {});
+}
+function subscribeMoment(){
+  db.doc('moment/now').onSnapshot((s) => { const d = s.exists ? s.data() : null; if (d && typeof d.at === 'number') manualMomentAt = d.at; }, () => {});
+}
+
+let ready = null, backend = null;   // backend: 'artifact' | 'server' | null (this device only)
+async function init(){
+  try {
+    if (window.claude && typeof window.claude.use === 'function'){ await initArtifact(); return; }
+    if (/^https?:$/.test(location.protocol) && await initServer()) return;
+    setMode('local');
+  } catch (e){ setMode('local'); }
+  finally {
+    $('#cardBtn').dataset.ok = (downloadsNs || !window.claude) ? '1' : '';
+    if (scr.on){ renderQr(); $('#momentNow').hidden = !(isOwner && backend); }
+  }
+}
+async function initArtifact(){
+  const res = await Promise.all([window.claude.use('db'), window.claude.use('user'), window.claude.use('downloads')]);
+  const d = res[0], u = res[1]; downloadsNs = res[2];
+  if (u){ try { isOwner = await u.isOwner(); } catch (e) {} }
+  if (!d){ setMode('local'); return; }
+  db = d; backend = 'artifact';
+  uid = u ? await u.id() : null;
+  const can = u ? await u.can('data.write') : null;
+  subscribe(); subscribeBless(); subscribeMoment();
+  setMode(!uid || can === false ? 'readonly' : 'shared');
+}
+
+/* ---------------- tapped krathong card ---------------- */
+const card = $('#boatCard');
+let removeArmed = false;
+function selectBoat(k){
+  const b = boats.get(k); if (!b) return;
+  selectedK = k; const it = b.item, ty = TYPES[it.t];
+  drawIcon($('#bcIcon'), it.t, 56, 48, 0.72, true);
+  $('#bcType').textContent = ty.name;
+  $('#bcLegend').textContent = 'จากตำนาน' + ty.legend + ' · ' + ty.meaning;
+  const wish = $('#bcWish');
+  if (it.p){ wish.textContent = 'ผู้ลอยเก็บคำอธิษฐานนี้ไว้ในใจ'; wish.className = 'bc-wish muted'; }
+  else if (it.w){ wish.textContent = '“' + it.w + '”'; wish.className = 'bc-wish'; }
+  else { wish.textContent = 'ลอยโดยไม่ได้เขียนคำอธิษฐาน'; wish.className = 'bc-wish muted'; }
+  const who = isMine(it) ? 'กระทงของคุณ' : (it.n ? 'ลอยโดย ' + it.n : 'ไม่ระบุชื่อ');
+  $('#bcMeta').textContent = who + (it.at ? ' · ' + ago(it.at) : '');
+  const rm = $('#bcRemove'); removeArmed = false;
+  const canRemove = isMine(it) || (isOwner && backend && it.owner !== 'local');
+  rm.hidden = !canRemove;
+  rm.textContent = isMine(it) ? 'เก็บกระทงของฉันออก' : 'นำออกจากสายน้ำ';
+  reportArmed = false;
+  const rp = $('#bcReport'); rp.hidden = isMine(it); rp.textContent = 'แจ้งว่าไม่เหมาะสม';
+  card.hidden = false;
+  refreshCardBless();
+}
+let reportArmed = false;
+function canBless(it){ return !!backend && it.owner !== 'local' && !isMine(it) && !!uid; }
+function refreshCardBless(){
+  const b = selectedK && boats.get(selectedK); if (!b || card.hidden) return;
+  const it = b.item, n = blessCount.get(it.k) || 0, btn = $('#bcBless');
+  btn.hidden = !canBless(it);
+  const done = blessedByMe.has(it.k);
+  btn.disabled = done; btn.textContent = done ? 'ส่งพรแล้ว' : 'ส่งพร';
+  $('#bcBlessCount').textContent = n ? 'ได้รับพร ' + n.toLocaleString('th-TH') + ' ครั้ง' : (isMine(it) ? 'ยังไม่มีใครส่งพรให้' : (btn.hidden ? '' : 'เป็นคนแรกที่ส่งพรให้กระทงใบนี้'));
+}
+$('#bcBless').addEventListener('click', async () => {
+  const b = boats.get(selectedK); if (!b) return;
+  const it = b.item;
+  if (!canBless(it) || blessedByMe.has(it.k)) return;
+  blessedByMe.add(it.k); saveSet('e-kratong.blessed', blessedByMe);
+  blessCount.set(it.k, (blessCount.get(it.k) || 0) + 1);
+  sparkle(it.k); chime(1319, 0.07); chime(1760, 0.04, 0.12);
+  refreshCardBless();
+  try { const n = await backendApi[backend].bless(it); if (typeof n === 'number') blessCount.set(it.k, n); }
+  catch (e){ if (e && e.status === 429) showToast('ส่งพรถี่เกินไป รอสักครู่แล้วลองใหม่'); }
+  refreshCardBless();
+});
+$('#bcReport').addEventListener('click', async () => {
+  const b = boats.get(selectedK); if (!b) return;
+  const rp = $('#bcReport');
+  if (!reportArmed){ reportArmed = true; rp.textContent = 'แตะอีกครั้งเพื่อยืนยัน กระทงนี้จะหายจากจอคุณ'; return; }
+  const it = b.item;
+  hiddenKeys.add(it.k); saveSet('e-kratong.hidden', hiddenKeys);
+  closeCard(); boats.delete(it.k); syncBoats();
+  showToast('ซ่อนกระทงใบนี้แล้ว ขอบคุณที่ช่วยดูแลสายน้ำ');
+  if (backend === 'server' && it.owner !== 'local'){ try { await backendApi.server.report(it); } catch (e) {} }
+});
+function closeCard(){ selectedK = null; card.hidden = true; }
+function readNext(){
+  const pub = Array.from(boats.values()).filter(b => !b.item.p && b.item.w && b.item.k !== selectedK);
+  const vis = pub.filter(b => b.x > 30 && b.x < W - 30);
+  const pool = vis.length ? vis : pub;
+  if (!pool.length){ showToast('ยังไม่มีคำอธิษฐานที่เปิดให้อ่าน ลองลอยใบแรกดูไหม'); return; }
+  selectBoat(pool[Math.floor(Math.random()*pool.length)].item.k);
+}
+$('#bcClose').addEventListener('click', closeCard);
+$('#bcNext').addEventListener('click', readNext);
+$('#readBtn').addEventListener('click', readNext);
+$('#bcLegendBtn').addEventListener('click', () => { const b = boats.get(selectedK); if (!b) return; showLegend(b.item.t); $('#legends').scrollIntoView({ behavior:reduceMotion ? 'auto' : 'smooth' }); });
+$('#bcRemove').addEventListener('click', async () => {
+  const b = boats.get(selectedK); if (!b) return;
+  const rm = $('#bcRemove');
+  if (!removeArmed){ removeArmed = true; rm.textContent = 'แตะอีกครั้งเพื่อยืนยัน'; return; }
+  const it = b.item; rm.disabled = true;
+  try {
+    if (it.owner === 'local'){ local.items = local.items.filter(i => i.k !== it.k); saveLocal(); }
+    else if (backend && (it.owner === uid || isOwner)) await backendApi[backend].remove(it);
+    boats.delete(it.k); if (lastMineK === it.k) lastMineK = null;
+    closeCard(); syncBoats(); showToast('นำกระทงออกจากสายน้ำแล้ว');
+  } catch (e){ showToast('นำกระทงออกไม่สำเร็จ ลองอีกครั้งได้'); }
+  finally { rm.disabled = false; }
+});
+
+/* ---------------- maker ---------------- */
+let currentType = 'suchada';
+const tilesEl = $('#tiles');
+ORDER.forEach((id) => {
+  const lab = document.createElement('label'); lab.className = 'tile';
+  const inp = document.createElement('input'); inp.type = 'radio'; inp.name = 'ktype'; inp.value = id; inp.id = 'kt-' + id;
+  const cv = document.createElement('canvas'); cv.setAttribute('aria-hidden', 'true');
+  const sp = document.createElement('span'); sp.textContent = TYPES[id].short;
+  lab.append(inp, cv, sp); tilesEl.appendChild(lab);
+  drawIcon(cv, id, 64, 52, 0.84, false);
+  inp.addEventListener('change', () => { if (inp.checked) setType(id); });
+});
+function setType(id){
+  currentType = id;
+  tilesEl.querySelectorAll('.tile').forEach(t => { const on = t.querySelector('input').value === id; t.classList.toggle('is-on', on); t.querySelector('input').checked = on; });
+  const ty = TYPES[id];
+  $('#pvName').textContent = ty.name;
+  $('#pvLegend').textContent = 'จากตำนาน' + ty.legend + ' (' + ty.origin + ')';
+  $('#pvMeaning').textContent = 'ความหมาย: ' + ty.meaning;
+  $('#wish').placeholder = ty.prompt;
+  const box = $('#samples'); box.textContent = '';
+  for (const s of WISH_SAMPLES[id]){
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sample'; b.textContent = s;
+    b.addEventListener('click', () => { const w = $('#wish'); w.value = s; w.dispatchEvent(new Event('input')); w.focus(); });
+    box.appendChild(b);
+  }
+}
+function showWishError(msg){ const el = $('#wishError'); el.textContent = msg; el.hidden = !msg; }
+setType('suchada');
+const wishEl = $('#wish');
+const updateCount = () => { $('#wishCount').textContent = graphemes(wishEl.value).length + '/140'; };
+function bindTextLimit(field, limit, changed){
+  function update(event){
+    if (event && event.isComposing) return;
+    const value = limitText(field.value, limit);
+    if (value !== field.value){
+      // Preserve existing text after the caret when a paste or IME commit is too long.
+      const caret = field.selectionEnd, suffix = field.value.slice(caret);
+      const prefix = suffix ? limitText(field.value.slice(0, caret), limit - graphemes(suffix).length) : value;
+      field.value = suffix ? limitText(prefix + suffix, limit) : value;
+      field.setSelectionRange(prefix.length, prefix.length);
+    }
+    if (changed) changed();
+  }
+  field.addEventListener('input', update);
+  field.addEventListener('compositionend', update);
+  update();
+}
+bindTextLimit(wishEl, 140, () => { updateCount(); showWishError(''); });
+bindTextLimit($('#nick'), 24, () => showWishError(''));
+bindTextLimit($('#worry'), 80);
+function goMaker(){ $('#maker').scrollIntoView({ behavior:reduceMotion ? 'auto' : 'smooth', block:'start' }); }
+$('#goMaker').addEventListener('click', goMaker);
+
+let launching = false, lastLaunch = null;
+$('#makerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (launching) return;
+  launching = true; const btn = $('#launchBtn'); btn.disabled = true; btn.textContent = 'กำลังลอย…';
+  try {
+    await Promise.race([ready, sleep(11000)]);
+    const wish = limitText(wishEl.value.trim(), 140), nick = limitText($('#nick').value.trim(), 24);
+    const pub = $('#share').checked, worry = limitText($('#worry').value.trim(), 80);
+    if (hasBadWords(pub ? wish : '') || hasBadWords(nick)){
+      showWishError('มีคำที่ไม่เหมาะกับสายน้ำ ลองเขียนใหม่อีกครั้งนะ');
+      wishEl.focus();
+      return;
+    }
+    showWishError('');
+    const item ={ k:newId(), t:currentType, w:pub ? wish : '', n:nick, p:pub ? 0 : 1, at:Date.now() };
+    const wantShared = mode === 'shared';
+    let full = Object.assign({}, item, { owner:wantShared ? uid : 'local' });
+    const x0 = W/2 - 30;
+    const boat = makeBoat(full); boat.x = x0; boat.z = 1; boat.launch = { t0:performance.now(), x0, z0:1, z1:0.55 + Math.random()*0.3 };
+    boats.set(item.k, boat); lastMineK = item.k;
+    if (sceneVisible || true) sceneEl.scrollIntoView({ behavior:reduceMotion ? 'auto' : 'smooth', block:'start' });
+    addRing(x0, frontY(), SC*1.4);
+    if (worry) setTimeout(() => addLetgo(worry), 600);
+    chime(659, 0.12); chime(988, 0.06, 0.14);
+    let savedShared = false, failed = null;
+    if (wantShared){
+      try {
+        const saved = await backendApi[backend].launch(item);
+        if (backend === 'server'){
+          full = Object.assign({}, saved, { owner:uid });
+          if (full.k !== item.k){ boats.delete(item.k); boats.set(full.k, boat); if (lastMineK === item.k) lastMineK = full.k; }
+          boat.item = full;
+          if (!shared.items.some(i => i.k === full.k)){ shared.items = capRiver([full].concat(shared.items)); shared.count++; }
+        }
+        savedShared = true;
+      } catch (err){ failed = err; }
+    }
+    if (failed && backend === 'server'){
+      // Own server: nothing was saved, so take the krathong back and let the person try again
+      boats.delete(item.k); if (lastMineK === item.k) lastMineK = null; syncBoats();
+      if (failed.code === 'blocked_words'){ showWishError('มีคำที่ไม่เหมาะกับสายน้ำ ลองเขียนใหม่อีกครั้งนะ'); goMaker(); return; }
+      if (failed.status === 413){ showWishError('ข้อความมีข้อมูลมากเกินไป ลองลดความยาวของคำอธิษฐานหรือชื่อ'); goMaker(); return; }
+      showToast(failed.status === 429 ? 'ลอยถี่เกินไป รอสักครู่แล้วลองใหม่ได้เลย' : 'ลอยไม่สำเร็จ ตรวจการเชื่อมต่อแล้วลองใหม่');
+      return;
+    }
+    if (failed){ boat.item = Object.assign({}, item, { owner:'local' }); writeFailed(failed); }
+    if (!savedShared){ local.items = [item].concat(local.items).slice(0, MAX_MINE); saveLocal(); }
+    syncBoats();
+    lastLaunch = { item:full, wish };
+    wishEl.value = ''; $('#worry').value = ''; $('#letgo').open = false; updateCount();
+    showToast(savedShared ? 'กระทงของคุณลอยออกไปแล้ว ทุกคนที่เปิดหน้านี้จะเห็นกระทงใบนี้' : 'กระทงของคุณลอยออกไปแล้ว', true);
+  } finally { launching = false; btn.disabled = false; btn.textContent = 'ลอยกระทง'; }
+});
+
+/* ---------------- legends ---------------- */
+const tabsEl = $('#legendTabs');
+ORDER.forEach((id) => {
+  const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'tab'); b.id = 'tab-' + id; b.setAttribute('aria-controls', 'legendPanel'); b.dataset.id = id;
+  const o = document.createElement('span'); o.className = 'tab-origin'; o.textContent = LEGENDS[id].num + ' · ' + TYPES[id].origin;
+  const t = document.createElement('span'); t.className = 'tab-title'; t.textContent = LEGENDS[id].tab;
+  b.append(o, t); tabsEl.appendChild(b);
+  b.addEventListener('click', () => showLegend(id));
+});
+tabsEl.addEventListener('keydown', (e) => {
+  const keys = ['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft']; if (keys.indexOf(e.key) === -1) return;
+  e.preventDefault();
+  const i = ORDER.indexOf(currentLegend), d = (e.key === 'ArrowDown' || e.key === 'ArrowRight') ? 1 : -1;
+  const next = ORDER[(i + d + ORDER.length) % ORDER.length]; showLegend(next); $('#tab-' + next).focus();
+});
+let currentLegend = 'suchada';
+function showLegend(id){
+  currentLegend = id; const L = LEGENDS[id], ty = TYPES[id];
+  tabsEl.querySelectorAll('[role=tab]').forEach(b => { const on = b.dataset.id === id; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
+  $('#legendPanel').setAttribute('aria-labelledby', 'tab-' + id);
+  $('#lpNum').textContent = L.num + ' · ' + ty.origin;
+  $('#lpTitle').textContent = L.title;
+  const st = $('#lpStory'); st.textContent = '';
+  L.story.forEach(p => { const el = document.createElement('p'); el.textContent = p; st.appendChild(el); });
+  $('#lpHonored').textContent = L.honored;
+  $('#lpToday').textContent = L.today;
+  $('#lpGo').textContent = 'ลอย' + ty.name;
+  const cv = $('#lpIcon'), small = window.innerWidth <= 560;
+  drawIcon(cv, id, small ? 96 : 150, small ? 77 : 120, small ? 1.15 : 1.75, false);
+}
+$('#lpGo').addEventListener('click', () => { setType(currentLegend); goMaker(); });
+showLegend('suchada');
+
+/* ---------------- lanterns + pledges ---------------- */
+function lanternFromButton(){ releaseLantern(W*(0.15 + Math.random()*0.7), HZ - 8 - Math.random()*20); }
+$('#lanternBtn').addEventListener('click', lanternFromButton);
+$('#lanternBtn2').addEventListener('click', () => { sceneEl.scrollIntoView({ behavior:reduceMotion ? 'auto' : 'smooth' }); setTimeout(lanternFromButton, reduceMotion ? 0 : 450); });
+const pledgesEl = $('#pledges');
+PLEDGES.forEach((p) => {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'pledge'; b.dataset.id = p.id; b.textContent = p.label; b.setAttribute('aria-pressed', 'false');
+  b.addEventListener('click', () => togglePledge(p.id));
+  pledgesEl.appendChild(b);
+});
+let pledgeTimer = null;
+async function togglePledge(id){
+  if (mode === 'loading') await Promise.race([ready, sleep(11000)]);
+  if (mode === 'shared'){ try { await ensureMyDoc(); } catch (e) {} }
+  const set = new Set(myPledges()); if (set.has(id)) set.delete(id); else set.add(id);
+  const arr = PLEDGE_IDS.filter(x => set.has(x));
+  if (mode === 'shared'){
+    pendingPledges = arr; renderPledges();
+    clearTimeout(pledgeTimer);
+    pledgeTimer = setTimeout(async () => {
+      try { await backendApi[backend].savePledges(arr); myDoc.pledges = arr; }
+      catch (e){
+        if (backend === 'server') showToast(e.status === 429 ? 'กดถี่เกินไป รอสักครู่แล้วลองใหม่' : 'บันทึกคำมั่นไม่สำเร็จ ลองใหม่ได้');
+        else { local.pledges = arr; saveLocal(); writeFailed(e); }
+      }
+      finally { if (pendingPledges === arr) pendingPledges = null; renderPledges(); }
+    }, 600);
+  } else { local.pledges = arr; saveLocal(); renderPledges(); }
+}
+function renderPledges(){
+  const mine = new Set(myPledges());
+  pledgesEl.querySelectorAll('.pledge').forEach(b => b.setAttribute('aria-pressed', String(mine.has(b.dataset.id))));
+  const el = $('#pledgeCount'); el.textContent = '';
+  const strong = (n) => { const s = document.createElement('strong'); s.textContent = n.toLocaleString('th-TH'); return s; };
+  if (mode === 'shared' && shared.loaded){
+    el.append(backend === 'server' ? 'คำมั่นในสายน้ำนี้ ' : 'สองวันนี้มีคำมั่น ', strong(shared.pledgeTotal), ' ข้อ จาก ', strong(shared.pledgePeople), ' คน');
+  } else if (mode === 'loading'){
+    el.textContent = 'กำลังนับคำมั่น…';
+  } else {
+    el.append('คำมั่นของคุณ ', strong(mine.size), ' ข้อ บันทึกไว้ในเครื่องนี้');
+  }
+}
+
+/* ---------------- toast + share card ---------------- */
+let toastTimer = null;
+function showToast(text, withCard){
+  $('#toastText').textContent = text;
+  $('#cardBtn').hidden = !(withCard && $('#cardBtn').dataset.ok === '1');
+  $('#toast').hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { $('#toast').hidden = true; }, withCard ? 12000 : 4500);
+}
+$('#toastClose').addEventListener('click', () => { $('#toast').hidden = true; });
+function wrapText(c, text, maxW){
+  const segs = segW ? Array.from(segW.segment(text), s => s.segment) : graphemes(text);
+  const lines = []; let line = '';
+  for (const s of segs){ const test = line + s; if (c.measureText(test).width > maxW && line){ lines.push(line.trim()); line = s.replace(/^\s+/, ''); } else line = test; }
+  if (line.trim()) lines.push(line.trim());
+  return lines;
+}
+async function makeCardBlob(item, wish){
+  const c = document.createElement('canvas'); c.width = 1080; c.height = 1350; const x = c.getContext('2d');
+  const sample = 'กขคลอยกระทง' + (wish || '') + (item.n || '');
+  try { await Promise.all([document.fonts.load('500 64px Mitr', sample), document.fonts.load('400 46px Mitr', sample), document.fonts.load('500 30px "IBM Plex Sans Thai Looped"', sample), document.fonts.load('600 30px "IBM Plex Sans Thai Looped"', sample)]); } catch (e) {}
+  const hz = 760, ty = TYPES[item.t];
+  let g = x.createLinearGradient(0, 0, 0, hz); g.addColorStop(0, '#050d18'); g.addColorStop(0.6, '#0b1b2c'); g.addColorStop(1, '#173350'); x.fillStyle = g; x.fillRect(0, 0, 1080, hz);
+  const cardMoon = { x:860, y:230, r:92 };
+  paintSky(x, 1080, hz, cardMoon, 9, 1.6);
+  drawMoonDisc(x, cardMoon, !moonExportSafe);
+  g = x.createLinearGradient(0, hz, 0, 1350); g.addColorStop(0, '#123049'); g.addColorStop(1, '#061320'); x.fillStyle = g; x.fillRect(0, hz, 1080, 1350 - hz);
+  drawShore(x, 1080, hz, 1350);
+  for (let y = hz + 4; y < 1350; y += 4 + (y - hz)/590*8){ const d = (y - hz)/590, w = (14 + d*90)*(0.6 + 0.4*Math.sin(y*0.21)); x.fillStyle = 'rgba(244,236,214,' + (0.4*(1 - d*0.7)).toFixed(3) + ')'; x.fillRect(860 - w/2 + Math.sin(y*0.07)*12, y, w, 2 + d*3); }
+  const gl = ty.glow, rgb = gl[0] + ',' + gl[1] + ',' + gl[2];
+  x.save(); x.translate(540, 1080 + 18); x.scale(1, 0.32); g = x.createRadialGradient(0, 0, 0, 0, 0, 330); g.addColorStop(0, 'rgba(' + rgb + ',.4)'); g.addColorStop(1, 'rgba(' + rgb + ',0)'); x.fillStyle = g; ell(x, 0, 0, 330, 330); x.fill(); x.restore();
+  x.save(); x.translate(540, 1080); x.scale(6.2, 6.2); DRAW[item.t](x, 1.3, 7); x.restore();
+  x.textBaseline = 'alphabetic';
+  x.fillStyle = '#f0a13c'; x.font = '600 30px "IBM Plex Sans Thai Looped", sans-serif'; x.fillText('E-Kratong · ลอยกระทง 2569', 80, 112);
+  x.fillStyle = '#f2ebdb'; x.font = '500 64px Mitr, sans-serif'; x.fillText(ty.name, 80, 236);
+  x.fillStyle = '#9fb2bf'; x.font = '400 30px "IBM Plex Sans Thai Looped", sans-serif'; x.fillText('จากตำนาน' + ty.legend, 80, 294);
+  x.fillStyle = '#f2ebdb'; x.font = '400 46px Mitr, sans-serif';
+  const body = wish ? '“' + wish + '”' : ty.meaning;
+  const lines = wrapText(x, body, 900).slice(0, 4);
+  lines.forEach((ln, i) => x.fillText(ln, 80, 404 + i*70));
+  if (item.n){ x.fillStyle = '#cdd5d4'; x.font = '500 32px "IBM Plex Sans Thai Looped", sans-serif'; x.fillText('— ' + item.n, 80, 404 + lines.length*70 + 8); }
+  x.fillStyle = '#ffd88a'; x.font = '500 28px "IBM Plex Sans Thai Looped", sans-serif'; x.fillText('ความหมาย: ' + ty.meaning, 80, 1266);
+  x.fillStyle = '#9fb2bf'; x.textAlign = 'right'; x.fillText('ลอยแล้ว ไม่มีขยะลงแม่น้ำ', 1000, 1266); x.textAlign = 'left';
+  return new Promise(res => c.toBlob(res, 'image/png'));
+}
+$('#cardBtn').addEventListener('click', async () => {
+  if (!lastLaunch) return;
+  const btn = $('#cardBtn'); btn.disabled = true;
+  try {
+    const blob = await makeCardBlob(lastLaunch.item, lastLaunch.wish); if (!blob) throw new Error('no blob');
+    const name = 'e-kratong-2569.png';
+    if (downloadsNs){
+      try { await downloadsNs.save({ filename:name, data:blob }); showToast('บันทึกการ์ดกระทงแล้ว'); }
+      catch (e){ if (!(e && e.code === 'declined')) showToast('บันทึกการ์ดไม่สำเร็จ ลองกดอีกครั้งได้'); }
+    } else if (!window.claude){
+      const url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    }
+  } catch (e){ showToast('สร้างการ์ดไม่สำเร็จ ลองอีกครั้งได้'); }
+  finally { btn.disabled = false; }
+});
+
+/* ---------------- countdown ---------------- */
+(function countdown(){
+  const now = new Date(Date.now() + 7*3600e3);
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const d = Math.round((Date.UTC(2026, 10, 24) - today)/864e5);
+  const el = $('#countdown'); el.textContent = '';
+  const main = document.createElement('span'); main.className = 'cd-main';
+  const date = document.createElement('span'); date.className = 'cd-date';
+  if (d > 1){ main.textContent = 'อีก ' + d + ' วันถึงคืนลอยกระทง'; date.textContent = ' · อังคาร 24 พ.ย. 2569'; }
+  else if (d === 1){ main.textContent = 'พรุ่งนี้คืนลอยกระทง'; date.textContent = ' · อังคาร 24 พ.ย. 2569'; }
+  else if (d === 0){ main.textContent = 'คืนนี้คืนลอยกระทง'; date.textContent = ' · ขึ้น 15 ค่ำ เดือน 12'; }
+  else { main.textContent = 'ลอยกระทง 2569 ผ่านมาแล้ว'; date.textContent = ' · สายน้ำนี้ลอยได้ทุกคืน'; }
+  el.append(main, date);
+})();
+
+/* ---------------- river-waste charts (กรุงเทพมหานคร, 6 พ.ย. 2568) ---------------- */
+const WASTE_YEARS = [['2566', 639828], ['2567', 514590], ['2568', 391027]];
+const WASTE_MATERIALS = [
+  { name:'โฟม', n:28298, pct:7.23, color:'var(--chart-1)' },
+  { name:'ขนมปัง', n:39103, pct:10.01, color:'var(--chart-2)' },
+  { name:'วัสดุธรรมชาติ', n:323626, pct:82.76, color:'var(--chart-3)' }
+];
+(function renderWaste(){
+  const fmt = (n) => n.toLocaleString('th-TH'), max = Math.max.apply(null, WASTE_YEARS.map(y => y[1]));
+  const bars = $('#trendBars'), stack = $('#matStack'), legend = $('#matLegend'), table = $('#wasteTable');
+  const row = (cells) => { const tr = document.createElement('tr'); cells.forEach(c => { const td = document.createElement('td'); td.textContent = c; tr.appendChild(td); }); table.appendChild(tr); };
+  for (const [yr, n] of WASTE_YEARS){
+    const r = document.createElement('div'); r.className = 'bar-row';
+    const y = document.createElement('span'); y.className = 'yr'; y.textContent = yr;
+    const track = document.createElement('div'); track.className = 'bar-track';
+    const bar = document.createElement('div'); bar.className = 'bar'; bar.style.width = (n/max*74).toFixed(2) + '%'; bar.tabIndex = 0;
+    bar.dataset.tip = 'ปี ' + yr + ' เก็บได้ ' + fmt(n) + ' ใบ'; bar.setAttribute('aria-label', bar.dataset.tip);
+    const v = document.createElement('span'); v.className = 'bar-val'; v.textContent = fmt(n);
+    track.append(bar, v); r.append(y, track); bars.appendChild(r);
+    row(['เก็บได้ปี ' + yr, fmt(n), '']);
+  }
+  for (const m of WASTE_MATERIALS){
+    const seg = document.createElement('div'); seg.className = 'seg'; seg.style.flex = String(m.pct); seg.style.background = m.color; seg.tabIndex = 0;
+    seg.dataset.tip = m.name + ' ' + fmt(m.n) + ' ใบ (' + m.pct + '%)'; seg.setAttribute('aria-label', seg.dataset.tip);
+    stack.appendChild(seg);
+    const li = document.createElement('li'), sw = document.createElement('i'), val = document.createElement('span');
+    sw.style.background = m.color; val.textContent = m.pct + '%';
+    li.append(sw, m.name + ' ', val); legend.appendChild(li);
+    row(['ปี 2568 · ' + m.name, fmt(m.n), m.pct + '%']);
+  }
+  const tip = document.createElement('div'); tip.className = 'viz-tip'; tip.hidden = true; tip.setAttribute('role', 'tooltip');
+  (document.body || document.documentElement).appendChild(tip);
+  const show = (el, x, y) => {
+    tip.textContent = el.dataset.tip; tip.hidden = false;
+    const r = tip.getBoundingClientRect();
+    tip.style.left = Math.max(8, Math.min(innerWidth - r.width - 8, x + 12)) + 'px';
+    tip.style.top = Math.max(8, y - r.height - 12) + 'px';
+  };
+  document.querySelectorAll('#why [data-tip]').forEach(el => {
+    el.addEventListener('pointermove', (e) => show(el, e.clientX, e.clientY));
+    el.addEventListener('pointerleave', () => { tip.hidden = true; });
+    el.addEventListener('focus', () => { const r = el.getBoundingClientRect(); show(el, r.left + r.width/2, r.top); });
+    el.addEventListener('blur', () => { tip.hidden = true; });
+  });
+})();
+$('#whyGo').addEventListener('click', () => goMaker());
+
+/* ---------------- blessing sparkles ---------------- */
+const sparks = [];
+function sparkle(k){
+  const b = boats.get(k); if (!b || !W || sparks.length > 240) return;
+  const { x, y, s } = boatGeom(b);
+  if (x < -60 || x > W + 60) return;
+  b.glowBoost = 1;
+  for (let i = 0; i < 16; i++) sparks.push({ x:x + (Math.random() - 0.5)*36*s, y:y - 18*s, vx:(Math.random() - 0.5)*16, vy:-(20 + Math.random()*34), life:0, max:1.3 + Math.random()*0.9, r:(1 + Math.random()*1.6)*SC });
+}
+function drawSparks(dt){
+  for (let i = sparks.length - 1; i >= 0; i--){
+    const p = sparks[i]; p.life += dt;
+    if (p.life >= p.max){ sparks.splice(i, 1); continue; }
+    p.x += p.vx*dt; p.y += p.vy*dt; p.vy *= 0.985;
+    ctx.fillStyle = 'rgba(255,226,150,' + (1 - p.life/p.max).toFixed(3) + ')';
+    ell(ctx, p.x, p.y, p.r, p.r); ctx.fill();
+  }
+}
+
+/* ---------------- krathongs arriving from other people ---------------- */
+let lastArrivalLaunch = 0;
+function onArrivals(items){
+  const now = performance.now();
+  for (const it of items.slice(-5)){
+    if (isMine(it) || hiddenKeys.has(it.k)) continue;
+    spotlight(it);
+    // Float it in from the near bank so everyone notices someone just joined (at most one every 1.2 s)
+    if (!boats.has(it.k) && W && sceneVisible && now - lastArrivalLaunch > 1200){
+      lastArrivalLaunch = now;
+      const x0 = W*(0.25 + Math.random()*0.5), b = makeBoat(it);
+      b.x = x0; b.z = 1; b.launch = { t0:now, x0, z0:1, z1:0.5 + Math.random()*0.35 };
+      boats.set(it.k, b); shownAt.set(it.k, now);
+      addRing(x0, frontY(), SC*1.2);
+    }
+  }
+}
+
+/* ---------------- synchronized lantern release ---------------- */
+let momentList = ['19:00', '20:00', '21:00', '22:00'], manualMomentAt = 0, momentShowing = false;
+const firedMoments = new Set();
+const nowSync = () => Date.now() + SRV.skew;              // server clock when we have one
+function setMoments(list){
+  if (!Array.isArray(list)) return;
+  const ok = list.filter(m => typeof m === 'string' && /^\d{1,2}:\d{2}$/.test(m)).slice(0, 24);
+  momentList = ok;
+  const el = $('#momentTimes');
+  el.textContent = ok.length ? (ok.length > 1 ? ok.slice(0, -1).join(', ') + ' และ ' + ok[ok.length - 1] : ok[0]) : 'เวลาที่ผู้จัดงานกด';
+}
+function nextMoment(){
+  const n = nowSync(), day = Math.floor((n + 7*3600e3)/864e5)*864e5 - 7*3600e3;   // Bangkok midnight
+  let best = Infinity;
+  for (const m of momentList){
+    const parts = m.split(':'), mins = Number(parts[0])*60 + Number(parts[1]);
+    for (let d = 0; d < 2; d++){ const t = day + d*864e5 + mins*60e3; if (t > n - 8000 && t < best) best = t; }
+  }
+  if (manualMomentAt > n - 8000 && manualMomentAt < best) best = manualMomentAt;
+  return best;
+}
+const clockText = (ms) => { const d = new Date(ms + 7*3600e3); return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); };
+function momentTick(){
+  const at = nextMoment(), left = at - nowSync();
+  const pill = $('#momentPill'), ov = $('#momentOverlay');
+  if (left > 0 && left <= 3600e3){
+    const m = Math.floor(left/60000), s = Math.ceil(left/1000);
+    pill.hidden = false;
+    pill.textContent = 'ปล่อยโคมพร้อมกัน ' + clockText(at) + ' · อีก ' + (m >= 1 ? m + ' นาที' : s + ' วินาที');
+  } else pill.hidden = true;
+  if (left > 0 && left <= 10500 && !momentShowing){
+    ov.hidden = false; ov.classList.remove('done');
+    $('#moLabel').textContent = 'ปล่อยโคมพร้อมกันใน';
+    $('#moNum').textContent = String(Math.ceil(left/1000));
+  } else if (left <= 0 && isFinite(at) && !firedMoments.has(at)){
+    firedMoments.add(at); fireMoment();
+  } else if (!momentShowing) ov.hidden = true;
+  sceneEl.classList.toggle('moment-on', !ov.hidden);
+}
+function fireMoment(){
+  momentShowing = true;
+  const ov = $('#momentOverlay'); ov.hidden = false; ov.classList.add('done');
+  $('#moLabel').textContent = ''; $('#moNum').textContent = 'สุขสันต์วันลอยกระทง';
+  const n = reduceMotion ? 16 : 48;
+  for (let i = 0; i < n; i++) setTimeout(() => releaseLantern(W*(0.04 + Math.random()*0.92), HZ - 4 - Math.random()*30, true), i*70);
+  chime(784, 0.1); chime(988, 0.08, 0.22); chime(1175, 0.07, 0.44);
+  setTimeout(() => { momentShowing = false; ov.hidden = true; ov.classList.remove('done'); }, 5200);
+}
+setInterval(momentTick, 250);
+$('#momentNow').addEventListener('click', async () => {
+  if (!backend || !isOwner) return;
+  try { await backendApi[backend].moment(15); } catch (e) {}
+});
+
+/* ---------------- big-screen mode (#screen) ---------------- */
+const scr = { on:false, q:[], showing:false, spotK:null, wake:null, joinUrl:'' };
+function setScreen(on){
+  if (scr.on === on) return;
+  scr.on = on;
+  document.documentElement.classList.toggle('screen-mode', on);
+  if (on){ closeCard(); window.scrollTo(0, 0); renderQr(); requestWake(); }
+  else {
+    releaseWake(); scr.q = []; scr.spotK = null; scr.showing = false; $('#spotlight').hidden = true; sceneEl.classList.remove('spot-on');
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+  }
+  $('#momentNow').hidden = !(on && isOwner && backend);
+  resize();
+}
+const syncScreenFromHash = () => setScreen(location.hash === '#screen');
+window.addEventListener('hashchange', syncScreenFromHash);
+$('#screenBtn').addEventListener('click', () => { location.hash = 'screen'; });
+$('#screenLink').addEventListener('click', () => { location.hash = 'screen'; });
+$('#exitScreen').addEventListener('click', () => { location.hash = ''; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && scr.on && !document.fullscreenElement) location.hash = ''; });
+$('#fullBtn').addEventListener('click', () => {
+  const el = document.documentElement;
+  if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen().catch(() => {});
+  else if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+});
+async function requestWake(){ try { if (navigator.wakeLock) scr.wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
+function releaseWake(){ try { if (scr.wake) scr.wake.release(); } catch (e) {} scr.wake = null; }
+
+function joinLink(){
+  let saved = ''; try { saved = localStorage.getItem('e-kratong.joinUrl') || ''; } catch (e) {}
+  if (saved) return saved;
+  if (scr.joinUrl) return scr.joinUrl;
+  if (backend !== 'artifact' && /^https?:$/.test(location.protocol)) return location.origin + location.pathname;
+  return '';
+}
+let qrLibrary = null;
+function loadQrLibrary(){
+  if (!qrLibrary) qrLibrary = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'assets/qrcode-1.4.4.js';
+    script.onload = () => resolve(window.qrcode);
+    script.onerror = () => { qrLibrary = null; script.remove(); reject(new Error('QR library unavailable')); };
+    document.head.appendChild(script);
+  });
+  return qrLibrary;
+}
+async function renderQr(){
+  if (backend === 'server' && !scr.joinUrl){ try { const c = await api('GET', '/api/config'); if (c && typeof c.joinUrl === 'string') scr.joinUrl = c.joinUrl; } catch (e) {} }
+  const url = joinLink(), cv = $('#qrCanvas');
+  $('#qrUrl').textContent = url || 'ยังไม่มีลิงก์ แตะ "แก้ลิงก์" แล้ววางลิงก์ของหน้านี้';
+  if (!url){ cv.hidden = true; $('#qrEdit').hidden = false; return; }
+  try {
+    const encode = await loadQrLibrary();
+    if (url !== joinLink() || !scr.on) return;
+    const qr = encode(0, 'M');
+    qr.addData(new URL(url).href, 'Byte');   // URL serializes international hosts and paths to ASCII
+    qr.make();
+    const count = qr.getModuleCount(), cell = Math.floor(360/(count + 8));
+    cv.width = cv.height = cell*(count + 8);  // four clear modules on every side
+    const c = cv.getContext('2d');
+    c.fillStyle = '#fff'; c.fillRect(0, 0, cv.width, cv.height);
+    c.fillStyle = '#08131f';
+    for (let y = 0; y < count; y++) for (let x = 0; x < count; x++){
+      if (qr.isDark(y, x)) c.fillRect((x + 4)*cell, (y + 4)*cell, cell, cell);
+    }
+    cv.hidden = false;
+  } catch (e){ if (url === joinLink()) cv.hidden = true; }
+}
+$('#qrChange').addEventListener('click', () => { const e = $('#qrEdit'); e.hidden = !e.hidden; if (!e.hidden){ $('#qrInput').value = joinLink(); $('#qrInput').focus(); } });
+$('#qrSave').addEventListener('click', () => {
+  const v = $('#qrInput').value.trim();
+  if (v && !/^https?:\/\/\S+$/i.test(v)){ $('#qrUrl').textContent = 'ลิงก์ต้องขึ้นต้นด้วย http:// หรือ https://'; return; }
+  try { if (v) localStorage.setItem('e-kratong.joinUrl', v); else localStorage.removeItem('e-kratong.joinUrl'); } catch (e) {}
+  $('#qrEdit').hidden = true; renderQr();
+});
+
+function spotlight(it){
+  if (!scr.on || it.p || !it.w) return;
+  if (scr.q.some(x => x.k === it.k)) return;
+  scr.q.push(it); if (scr.q.length > 15) scr.q.shift();
+  if (!scr.showing) nextSpot();
+}
+function nextSpot(){
+  const el = $('#spotlight'), it = scr.q.shift();
+  if (!it || !scr.on){ scr.showing = false; scr.spotK = null; el.hidden = true; sceneEl.classList.remove('spot-on'); return; }
+  scr.showing = true; scr.spotK = it.k; sceneEl.classList.add('spot-on');
+  $('#spWish').textContent = '“' + it.w + '”';
+  $('#spMeta').textContent = (it.n ? it.n + ' · ' : '') + TYPES[it.t].name;
+  el.hidden = false; el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
+  setTimeout(nextSpot, scr.q.length > 3 ? 3500 : 6500);
+}
+// When nobody is floating, keep the screen alive by showing wishes already on the river
+setInterval(() => {
+  if (!scr.on || scr.showing) return;
+  const pool = Array.from(boats.values()).filter(b => !b.item.p && b.item.w && b.x > 40 && b.x < W - 40);
+  if (pool.length) spotlight(pool[Math.floor(Math.random()*pool.length)].item);
+}, 9000);
+
+/* ---------------- boot ---------------- */
+if (local.items[0]) lastMineK = local.items[0].k;
+updateModeUI(); renderPledges();
+syncScreenFromHash();
+ready = init();
+resize(); sizePreview();
+if (window.ResizeObserver){
+  new ResizeObserver(() => resize()).observe(sceneEl);
+  new ResizeObserver(() => sizePreview()).observe(pv);
+} else window.addEventListener('resize', () => { resize(); sizePreview(); });
+if (window.IntersectionObserver){
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries){
+      if (entry.target === sceneEl) sceneVisible = entry.isIntersecting;
+      else pvVisible = entry.isIntersecting;
+    }
+    updateAnimation();
+  });
+  observer.observe(sceneEl); observer.observe(pv);
+} else {
+  const inView = el => { const r = el.getBoundingClientRect(); return r.height > 0 && r.bottom > 0 && r.top < innerHeight; };
+  const checkView = () => { sceneVisible = inView(sceneEl); pvVisible = inView(pv); updateAnimation(); };
+  window.addEventListener('scroll', checkView, { passive:true });
+  window.addEventListener('resize', checkView);
+  checkView();
+}
+document.addEventListener('visibilitychange', updateAnimation);
+if (document.fonts && document.fonts.load){
+  Promise.all([document.fonts.load('400 24px Mitr', 'ลอยทุกข์กระทง'), document.fonts.load('600 12px "IBM Plex Sans Thai Looped"', 'ของคุณ')]).catch(() => {});
+  document.fonts.addEventListener('loadingdone', resize);
+}
+})();
+</script>

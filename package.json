@@ -1,0 +1,17 @@
+{
+  "name": "e-kratong",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ระบบลอยกระทงออนไลน์ เล่าห้าตำนานผ่านกระทงห้าแบบ พร้อมเซิร์ฟเวอร์ของตัวเอง",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch server.js",
+    "load-test": "node scripts/load-test.js",
+    "test": "node --disable-warning=ExperimentalWarning --test scripts/river-log.test.mjs"
+  },
+  "license": "UNLICENSED"
+}

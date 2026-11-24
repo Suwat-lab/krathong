@@ -1,0 +1,8 @@
+data/
+public/
+.vercel/
+music/
+node_modules/
+*.db-wal
+*.db-shm
+debug.log

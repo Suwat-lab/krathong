@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="th"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>โต๊ะทำกระทง · E-Kratong</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/maplibre-gl.css?v=6.17.0">
+<link rel="stylesheet" href="assets/workshop.css?v=4">
+</head><body>
+<header class="sitehead"><div><a class="brand" href="./"><i></i>E-Kratong</a><span class="divider">/</span><a href="workshop.html">โต๊ะทำกระทง</a></div><a href="./">กลับสายน้ำ <span aria-hidden="true">↗</span></a></header>
+<main>
+<section id="mapView" class="stage">
+  <canvas id="sky" aria-hidden="true"></canvas>
+  <img class="moon" src="assets/moon.jpg" alt="" width="120" height="120">
+  <div class="stage-inner">
+    <div class="headline">
+      <p class="eyebrow">คืนเพ็ญเดือนสิบสอง · ขึ้น 15 ค่ำ</p>
+      <h1>ลอยกระทง ๒๕๖๙</h1>
+      <p class="counter" role="status">ลอยแล้ว <strong id="floatCount">–</strong> ใบ · ไม่มีขยะลงแม่น้ำ</p>
+    </div>
+    <div class="map-layout">
+      <div class="map-paper">
+        <div id="realMap" class="real-map" hidden role="application" aria-label="แผนที่จริง ลากเพื่อเลื่อน ซูมได้ แตะเพื่อปักจุดลอย"></div>
+        <svg id="thaiMap" viewBox="0 0 385 535" role="group" aria-label="แผนที่ประเทศไทย เลือกจุดลอยจากแผนที่หรือช่องเลือกสายน้ำ">
+          <defs><pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#94c5ae" stroke-opacity=".1" stroke-width=".8"/></pattern><linearGradient id="landFill" x2=".8" y2="1"><stop stop-color="#2e5a63"/><stop offset="1" stop-color="#15303a"/></linearGradient></defs>
+          <rect width="385" height="535" fill="url(#grid)"/><g id="land"></g><g id="mapPlaces"></g><g id="mapFloats"></g><g id="pin" pointer-events="none"><circle r="9" fill="none" stroke="#ffda93" stroke-width="1.5"/><circle r="3" fill="#ffe5ac"/></g>
+        </svg>
+        <span class="map-credit" id="svgCredit">ขอบเขตประเทศจาก <a href="https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries-2/">Natural Earth</a></span>
+      </div>
+      <aside class="map-side">
+        <section class="card"><h2>เลือกจุดลอย</h2>
+          <label for="mapSite">สายน้ำ</label><select id="mapSite"></select>
+          <p class="fine" id="coordinates"></p><p class="hint">แตะภายในแผนที่เพื่อปักจุดของคุณเองได้</p>
+        </section>
+        <section class="card"><div class="row"><h2>กระทงที่ลอยแล้ว</h2><button type="button" class="text-button" id="refreshMap">รีเฟรช</button></div><div id="floatList" class="float-list"></div></section>
+      </aside>
+    </div>
+  </div>
+  <div class="cta"><button type="button" class="cta-button" id="createRoom">สร้างกระทง</button></div>
+</section>
+<section id="roomView" class="wrap" hidden>
+  <div class="room-head"><div><a class="text-button" href="workshop.html">← กลับแผนที่</a><h1>โต๊ะทำกระทง</h1><p id="syncState" role="status">กำลังเปิดโต๊ะ…</p></div><div class="actions"><button type="button" id="invite">คัดลอกลิงก์ชวนเพื่อน</button><button type="button" class="primary" id="openFloat">นำไปลอย</button></div></div>
+  <div id="copyBox" class="card" hidden><label for="inviteUrl">ส่งลิงก์นี้ให้คนที่จะช่วยกันทำกระทง</label><input id="inviteUrl" type="text" readonly></div>
+  <div class="studio"><div class="art-area"><div class="art-mat"><canvas id="board" width="640" height="640" tabindex="0" aria-label="กระทงที่กำลังทำร่วมกัน ลากเพื่อย้ายวัสดุ หรือเลือกชิ้นงานและกดปุ่มลูกศรเพื่อขยับ"></canvas></div><p class="hint" id="gestureHint">แตะวัสดุบนโต๊ะแล้วลากเพื่อย้าย</p></div>
+  <aside class="tools"><section class="card"><h2>ถาดวัสดุ</h2><div id="materials" class="materials"></div>
+    <label class="upload" for="stickerFile">＋ เพิ่มสติกเกอร์จากเครื่อง<input type="file" id="stickerFile" accept="image/png,image/jpeg,image/webp"></label><p class="fine">เลือกรูป PNG, JPG หรือ WebP เพื่อนในห้องจะเห็นรูปที่แปะ</p>
+  </section><section class="card"><h2>แต่งชิ้นงาน</h2><label for="layer">ชิ้นที่เลือก</label><select id="layer"></select>
+    <fieldset id="pieceTools" disabled><label for="pieceSize">ขนาด</label><input id="pieceSize" type="range" min="6" max="82" step="1">
+      <div class="pair"><button id="left" type="button">หมุนซ้าย ↶</button><button id="right" type="button">หมุนขวา ↷</button></div>
+      <div class="pair"><button id="front" type="button">ไว้บนสุด</button><button id="back" type="button">ไว้ล่างสุด</button></div>
+      <div class="pair"><button id="cut" type="button" aria-pressed="false">ตัดรูปทรง</button><button id="uncut" type="button">คืนรูปเดิม</button></div>
+      <button id="remove" type="button" class="text-button remove">เอาชิ้นนี้ออก</button>
+    </fieldset>
+  </section></aside></div>
+</section>
+<p id="notice" role="status" aria-live="polite" hidden></p>
+</main>
+<dialog id="release"><form id="releaseForm"><h2>ลอยกระทงที่ช่วยกันทำ</h2><canvas id="finalPreview" width="180" height="180" aria-label="ตัวอย่างกระทงที่จะลอย"></canvas>
+<label for="releaseSite">จุดลอยบนแผนที่ไทย</label><select id="releaseSite"></select>
+<label for="wish">คำอธิษฐานที่จะแสดงบนแผนที่</label><textarea id="wish" rows="2" maxlength="140"></textarea>
+<label for="by">ชื่อผู้ร่วมทำ <small>เว้นว่างได้</small></label><input id="by" maxlength="48" type="text">
+<p class="fine">เมื่อลอยแล้ว ทุกคนจะเห็นกระทงใบนี้บนแผนที่และในสายน้ำ ห้องนี้จะปิดการแก้ไข</p>
+<p id="releaseError" role="alert" hidden></p><div class="actions"><button type="button" id="cancelRelease">กลับไปแต่ง</button><button class="primary" id="releaseButton">ลอยกระทง</button></div></form></dialog>
+<dialog id="floatDetail"><div class="row"><h2>กระทงที่ลอยแล้ว</h2><button id="closeDetail" type="button">ปิด</button></div><img id="floatImage" width="256" height="256" alt="กระทงที่ผู้ร่วมโต๊ะช่วยกันทำ"><p id="floatPlace"></p><blockquote id="floatWish"></blockquote><p id="floatBy" class="fine"></p><a class="text-button" href="./">ไปที่สายน้ำ →</a></dialog>
+<script type="module" src="assets/workshop.mjs?v=5"></script></body></html>

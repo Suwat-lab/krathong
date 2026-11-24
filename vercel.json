@@ -1,0 +1,24 @@
+﻿{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node scripts/build-static.mjs",
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://YOUR-BACKEND.example.com/api/:path*" },
+    { "source": "/log/:path*", "destination": "https://YOUR-BACKEND.example.com/log/:path*" },
+    { "source": "/music", "destination": "https://YOUR-BACKEND.example.com/music" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://tiles.openfreemap.org; media-src 'self' blob:; connect-src 'self' https://tiles.openfreemap.org; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
+    }
+  ]
+}

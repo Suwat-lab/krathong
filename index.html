@@ -1381,9 +1381,19 @@ function newKid(over){
   return Object.assign({ x:0, z:0.7, state:'play', t:0, boat:null, item:null, seed:Math.random()*100, shirt:rndPick(KID_SHIRTS), skin:rndPick(KID_SKIN),
     style:Math.floor(Math.random()*3), line:rndPick(KID_LINES), tx:null, tz:null, rest:0, wave:0, dir:1, stroke:0 }, over);
 }
+/* Swim anywhere in the river, near or far: of a few random spots take the one farthest from the other children. */
 function pickSwimSpot(k){
-  k.tx = W*(0.1 + Math.random()*0.8); k.tz = 0.45 + Math.random()*0.5;
-  if (Math.abs(k.tx - k.x) < 60) k.tx = Math.max(W*0.08, Math.min(W*0.92, k.x + (Math.random() < 0.5 ? -1 : 1)*(90 + Math.random()*160)));
+  const { y0, y1 } = lane(), span = y1 - y0;
+  let best = null, bestScore = -1;
+  for (let i = 0; i < 7; i++){
+    const tx = W*(0.05 + Math.random()*0.9), tz = 0.04 + Math.random()*0.96;
+    if (Math.hypot(tx - k.x, (tz - k.z)*span) < 90) continue;
+    let nearest = 1e9;
+    for (const o of kids){ if (o === k) continue; nearest = Math.min(nearest, Math.hypot(tx - (o.tx != null ? o.tx : o.x), (tz - (o.tz != null ? o.tz : o.z))*span)); }
+    if (nearest > bestScore){ bestScore = nearest; best = [tx, tz]; }
+  }
+  if (!best) best = [W*(0.1 + Math.random()*0.8), 0.08 + Math.random()*0.9];
+  k.tx = best[0]; k.tz = best[1];
 }
 function updateKids(dt, now){
   // krathongs a child took come back to the river after a while
@@ -1407,7 +1417,7 @@ function updateKids(dt, now){
     // fewer than wanted: another child comes in from either bank; more than wanted: the extras swim away
     if (kids.filter(k => k.state === 'play').length < kidPlayN && now > nextKid2){
       nextKid2 = now + 2500 + Math.random()*3000;
-      const fromRight = Math.random() < 0.5, z = 0.5 + Math.random()*0.45;
+      const fromRight = Math.random() < 0.5, z = 0.08 + Math.random()*0.9;
       const k = newKid({ x:fromRight ? W + 50 : -50, z }); pickSwimSpot(k); kids.push(k);
     }
     const play = kids.filter(k => k.state === 'play');
@@ -1449,11 +1459,15 @@ function updateKids(dt, now){
         if (k.wave > 0) k.wave -= dt;
         if (k.rest <= 0) pickSwimSpot(k);
       } else {
-        const dx = k.tx - k.x, dz = k.tz - k.z, d = Math.hypot(dx, dz*300);
-        if (d < 10){ k.rest = 1.5 + Math.random()*3.5; k.wave = Math.random() < 0.55 ? Math.min(k.rest, 1.8) : 0; if (Math.random() < 0.5) addRing(k.x, lane().y0 + (lane().y1 - lane().y0)*k.z, s*0.8); }
-        else { k.x += clampAbs(dx, 26*s*dt); k.z += clampAbs(dz, 0.05*dt); if (Math.abs(dx) > 2) k.dir = dx > 0 ? 1 : -1; k.moving = true; k.stroke += dt*5; }
+        const span = lane().y1 - lane().y0, dx = k.tx - k.x, dy = (k.tz - k.z)*span, d = Math.hypot(dx, dy);
+        if (d < 10){ k.rest = 1.5 + Math.random()*3.5; k.wave = Math.random() < 0.55 ? Math.min(k.rest, 1.8) : 0; if (Math.random() < 0.5) addRing(k.x, lane().y0 + span*k.z, s*0.8); }
+        else {   // swim in a straight line toward the spot, whatever the direction
+          const step = Math.min(d, 30*s*dt); k.x += dx/d*step; k.z += dy/d*step/span;
+          if (Math.abs(dx) > 3) k.dir = dx > 0 ? 1 : -1;
+          k.moving = true; k.stroke += dt*5;
+        }
       }
-      k.z = Math.max(0.4, Math.min(0.97, k.z));
+      k.z = Math.max(0.04, Math.min(1, k.z));
       continue;
     }
     if (k.state === 'leave'){

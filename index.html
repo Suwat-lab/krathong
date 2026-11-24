@@ -1328,6 +1328,26 @@ const KID_CHATS = [
   ['หิวแล้ว', 'เก็บกระทงขนมครกสิ'], ['เห็นปลาไหม', 'นั่นมันขาแก'], ['กลัวจระเข้ไหม', 'ตรงนี้มีแต่ปลาหมึกกระดาษ'],
   ['อันนี้เขียนดี', 'อ่านออกเหรอ ตัวหนังสือแกยังเขียนไม่เสร็จเลย'], ['ว่ายเร็วกว่ากันไหม', 'ไม่เอา เดี๋ยวผมเปียก'], ['ใครเป่าฟองใส่หู', 'ฟองธรรมชาติ ไม่ต้องจ่ายตังค์']
 ];
+/* a child that swims past a krathong sneaks a look at its wish, quotes it, and reacts (it never takes it) */
+const KID_REACTS = ['สาธุ', '555', 'ขอให้เป็นจริงนะ', 'เขียนดีอ่ะ', 'ขอเหมือนกัน', 'ตลกจัง', 'ใครเขียนอ่ะ', 'อ่านแล้วอมยิ้ม'];
+function kidReact(t){
+  if (/แฟน|รัก|คู่/.test(t)) return rndPick(['ขอเหมือนกัน', 'อุ๊ย หวานจัง', 'ขอให้ได้แฟนนะ', 'ใครอ่ะ อยากรู้']);
+  if (/สอบ|เกรด|เรียน|วิชา|ติด F/.test(t)) return rndPick(['ขอให้ผ่านนะ', 'ขอเหมือนกัน เรียนไม่ไหว', 'สู้ ๆ นะ', 'สาธุ']);
+  if (/รวย|เงิน|ตังค์|หวย/.test(t)) return rndPick(['ขอด้วยคน', 'มีเงินไหม 555', 'แบ่งหนูบ้าง', 'สาธุ']);
+  if (/สุข|สบาย|ดี|สมหวัง/.test(t)) return rndPick(['สาธุ', 'ขอให้เป็นจริงนะ', 'เขียนดีอ่ะ']);
+  return rndPick(KID_REACTS);
+}
+function kidQuote(t){ const g = Array.from(String(t).replace(/\s+/g, ' ').trim()); return '“' + g.slice(0, 32).join('') + (g.length > 32 ? '…' : '') + '”'; }
+function kidFindWish(k){
+  const { y0, y1 } = lane(), ky = y0 + (y1 - y0)*k.z;
+  let best = null, bd = 1e9;
+  for (const b of boats.values()){
+    if (b.launch || b.item.p || !b.item.w || hiddenKeys.has(b.item.k) || b.x < 20 || b.x > W - 20) continue;
+    const g = boatGeom(b), d = Math.hypot(g.x - k.x, g.y - ky);
+    if (d < 170 && d < bd){ bd = d; best = b; }
+  }
+  return best;
+}
 const KID_MUTTERS = ['อันนี้สวย', 'มีเงินไหมนะ', 'น้ำเย็นจัง', 'ขอให้รวย ๆ', 'ดวงจันทร์สวยจัง', 'ว่ายคนเดียวเหงาจัง', 'เมื่อไหร่จะถึงรอบเก็บนะ'];
 const KID_SHIRTS = ['#3b5b7a', '#7a4b3b', '#4b7a5b', '#6b4b7a', '#7a6a3b', '#8a4a5a'];
 const KID_SKIN = ['#7a5642', '#8a634a', '#6b4a3a', '#94705a'];
@@ -1364,7 +1384,8 @@ function releaseKids(now){
    Add ?kids=collect to the address to force a round (handy for demos). */
 const KID_ROUND_MS = 4*60*1000, KID_EVERY_H = 2;
 const kidForce = /[?&]kids=collect\b/.test(location.search);
-const kidMaxCollectors = () => (W > 1300 ? 3 : W > 900 ? 2 : 1);
+const kidCap = () => (W < 640 ? 3 : W < 900 ? 4 : 6);            // narrow screens would be crowded by six children
+const kidMaxCollectors = () => Math.max(1, Math.min(kidPlayN, kidCap()));
 function kidsCollecting(ms){
   if (kidForce) return true;
   const d = new Date(ms), into = (((d.getHours() % KID_EVERY_H)*60 + d.getMinutes())*60 + d.getSeconds())*1000 + d.getMilliseconds();
@@ -1408,8 +1429,8 @@ function updateKids(dt, now){
   const phase = collecting ? 'collect' : 'wait';
   if (phase !== kidPhase){
     kidPhase = phase;
+    kidPlayN = Math.min(1 + Math.floor(Math.random()*6), kidCap());   // 1-6 children (random each phase), fewer on narrow screens
     if (phase === 'wait'){
-      kidPlayN = 1 + Math.floor(Math.random()*3);   // 1-3 children play while waiting
       for (const k of kids) if (k.state === 'wade'){ if (k.boat) k.boat.taken = false; k.boat = null; k.state = 'play'; k.tx = null; }
     }
   }
@@ -1437,7 +1458,7 @@ function updateKids(dt, now){
   }
   // while waiting the children chat: two of them trade a joke, a lone child mutters now and then
   if (phase === 'wait' && now > (nextChat || 0)){
-    const talkers = kids.filter(k => k.state === 'play' && k.x > 30 && k.x < W - 30);
+    const talkers = kids.filter(k => k.state === 'play' && !k.peek && k.x > 30 && k.x < W - 30);
     if (talkers.length >= 2){
       const a = talkers[Math.floor(Math.random()*talkers.length)], b = talkers.filter(k => k !== a).sort((p, q) => Math.abs(p.x - a.x) - Math.abs(q.x - a.x))[0];
       const c = rndPick(KID_CHATS);
@@ -1459,8 +1480,24 @@ function updateKids(dt, now){
         if (k.wave > 0) k.wave -= dt;
         if (k.rest <= 0) pickSwimSpot(k);
       } else {
+        // swimming past a krathong with a wish: drift over, take a look
+        if (!k.peek && now > (k.scanAt || 0)){
+          k.scanAt = now + 500;
+          if (now > (k.peekCool || 0) && Math.random() < 0.5){
+            const pb = kidFindWish(k);
+            if (pb){ k.peek = pb; k.peekUntil = now + 12000; k.tx = pb.x + (k.x < pb.x ? -26 : 26)*s; k.tz = pb.z; }
+          }
+        }
+        if (k.peek && now > k.peekUntil){ k.peek = null; k.peekCool = now + 6000; pickSwimSpot(k); }
         const span = lane().y1 - lane().y0, dx = k.tx - k.x, dy = (k.tz - k.z)*span, d = Math.hypot(dx, dy);
-        if (d < 10){ k.rest = 1.5 + Math.random()*3.5; k.wave = Math.random() < 0.55 ? Math.min(k.rest, 1.8) : 0; if (Math.random() < 0.5) addRing(k.x, lane().y0 + span*k.z, s*0.8); }
+        if (d < 10 && k.peek){
+          const pb = k.peek; k.peek = null; k.peekCool = now + 9000 + Math.random()*8000;
+          if (boats.get(pb.item.k) === pb && pb.item.w){
+            k.dir = pb.x > k.x ? 1 : -1; k.rest = 4.8; k.wave = 0;
+            k.say = { text:kidQuote(pb.item.w), t0:now, t1:now + 2500 }; k.say2 = { text:kidReact(pb.item.w), t0:now + 2600, t1:now + 4600 };
+          } else pickSwimSpot(k);
+        }
+        else if (d < 10){ k.rest = 1.5 + Math.random()*3.5; k.wave = Math.random() < 0.55 ? Math.min(k.rest, 1.8) : 0; if (Math.random() < 0.5) addRing(k.x, lane().y0 + span*k.z, s*0.8); }
         else {   // swim in a straight line toward the spot, whatever the direction
           const step = Math.min(d, 30*s*dt); k.x += dx/d*step; k.z += dy/d*step/span;
           if (Math.abs(dx) > 3) k.dir = dx > 0 ? 1 : -1;
@@ -1573,7 +1610,7 @@ function drawKid(k){
   }
   ctx.restore();
   // speech while chatting with another child
-  if (k.say && nowMs >= k.say.t0 && nowMs < k.say.t1) bubble(k.say.text, x, y - 32*s);
+  for (const sy of [k.say, k.say2]) if (sy && nowMs >= sy.t0 && nowMs < sy.t1) bubble(sy.text, x, y - 32*s);
 }
 function drawBoats(dt, now){
   updateKids(dt, now);

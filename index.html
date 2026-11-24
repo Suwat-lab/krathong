@@ -1314,9 +1314,21 @@ function chip(text, x, y){
 let kidsOn = true;
 try { kidsOn = localStorage.getItem('e-kratong.kids') !== 'off'; } catch (e) {}
 const kids = [], kidReturns = [];
-let nextKid = performance.now() + 7000;
-const KID_LINES = ['ได้แล้ว!', 'สวยจังเลย', 'เดี๋ยวเอาไปคืนนะ', 'หนูเก็บให้!'];
-const KID_SHIRTS = ['#3b5b7a', '#7a4b3b', '#4b7a5b', '#6b4b7a', '#7a6a3b'];
+let nextKid = performance.now() + 3500;
+const KID_LINES = ['ได้แล้ว!', 'สวยจังเลย', 'เดี๋ยวเอาไปคืนนะ', 'หนูเก็บให้!', 'ว้าว แสงสวย', 'หอมจังเลย', 'ใครทำน้า', 'ไม่ทิ้งขยะนะ'];
+const KID_SHIRTS = ['#3b5b7a', '#7a4b3b', '#4b7a5b', '#6b4b7a', '#7a6a3b', '#8a4a5a'];
+const KID_SKIN = ['#7a5642', '#8a634a', '#6b4a3a', '#94705a'];
+const KID_SIZE = 1.3;   // children are drawn a little larger than the krathong scale so they read at a glance
+/* soft splash when a child scoops a krathong (only while the listener has sound on, like the chimes) */
+function splash(){
+  if (!musicOn || !AC || AC.state !== 'running') return;
+  const len = Math.round(AC.sampleRate*0.32), buf = AC.createBuffer(1, len, AC.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random()*2 - 1)*Math.pow(1 - i/len, 2.2);
+  const src = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  src.buffer = buf; f.type = 'bandpass'; f.frequency.value = 1500; f.Q.value = 0.7; g.gain.value = 0.16;
+  src.connect(f); f.connect(g); g.connect(AC.destination); src.start();
+  chime(1568, 0.025, 0.5); chime(2093, 0.018, 0.62);
+}
 const clampAbs = (v, m) => Math.max(-m, Math.min(m, v));
 function kidTarget(now){
   let best = null;
@@ -1343,13 +1355,14 @@ function updateKids(dt, now){
     if (it && !boats.has(it.k)){ const nb = makeBoat(it); nb.x = -90 - Math.random()*40; boats.set(it.k, nb); shownAt.set(it.k, now); }
   }
   if (!kidsOn || reduceMotion || !W || !sceneVisible){ if (kids.length) releaseKids(now); return; }
-  if (kids.length < (W > 900 ? 2 : 1) && now > nextKid){
-    nextKid = now + 4000;
+  if (kids.length < (W > 1300 ? 3 : W > 900 ? 2 : 1) && now > nextKid){
+    nextKid = now + 2500;
     const t = boats.size >= 3 ? kidTarget(now) : null;
-    if (t){ t.taken = true; kids.push({ x:W + 50, z:t.z, state:'wade', t:0, boat:t, item:null, seed:Math.random()*100, shirt:KID_SHIRTS[Math.floor(Math.random()*KID_SHIRTS.length)], line:KID_LINES[Math.floor(Math.random()*KID_LINES.length)] }); }
+    const pick = (a) => a[Math.floor(Math.random()*a.length)];
+    if (t){ t.taken = true; kids.push({ x:W + 50, z:t.z, state:'wade', t:0, boat:t, item:null, seed:Math.random()*100, shirt:pick(KID_SHIRTS), skin:pick(KID_SKIN), style:Math.floor(Math.random()*3), line:pick(KID_LINES) }); }
   }
   for (let i = kids.length - 1; i >= 0; i--){
-    const k = kids[i], s = SC*(0.42 + 0.95*k.z);
+    const k = kids[i], s = SC*(0.42 + 0.95*k.z)*KID_SIZE;
     if (k.state === 'wade' || k.state === 'scoop'){
       const b = k.boat;
       if (!b || (k.state === 'wade' && (boats.get(b.item.k) !== b || b.launch || b.item.k === selectedK))){ if (b) b.taken = false; k.boat = null; k.state = 'carry'; k.t = 0; continue; }
@@ -1364,18 +1377,19 @@ function updateKids(dt, now){
           k.item = b.item; boats.delete(b.item.k); k.boat = null;
           kidReturns.push({ item:k.item, at:now + 14000 });
           const { y0, y1 } = lane(); addRing(k.x - 20*s, y0 + (y1 - y0)*k.z, s*0.9);
+          splash();
         }
         if (k.t >= 1.4){ k.state = 'carry'; k.t = 0; }
       }
     } else {   // carry: wade back out downstream, holding the krathong up
       k.t += dt; k.x += 46*s*dt;
-      if (k.x > W + 80){ kids.splice(i, 1); nextKid = now + 14000 + Math.random()*20000; }
+      if (k.x > W + 80){ kids.splice(i, 1); nextKid = now + 5000 + Math.random()*9000; }
     }
   }
 }
 function drawKid(k){
-  const { y0, y1 } = lane(), y = y0 + (y1 - y0)*k.z, s = SC*(0.42 + 0.95*k.z), x = k.x;
-  const step = Math.sin(T*6 + k.seed), bob = Math.sin(T*2.4 + k.seed)*0.8*s;
+  const { y0, y1 } = lane(), y = y0 + (y1 - y0)*k.z, s = SC*(0.42 + 0.95*k.z)*KID_SIZE, x = k.x;
+  const skin = k.skin || '#7a5642', step = Math.sin(T*6 + k.seed), bob = Math.sin(T*2.4 + k.seed)*0.8*s;
   const holding = k.item && (k.state === 'carry' || (k.state === 'scoop' && k.t > 0.5));
   // hands: [left, right] as offsets from the feet at the waterline
   let hl, hr;
@@ -1392,11 +1406,16 @@ function drawKid(k){
     ctx.fillStyle = g; ctx.fillRect(x - 40*s, y - 84*s, 80*s, 80*s);
   }
   // arms (behind the body), body, head
-  ctx.strokeStyle = '#6b4c3a'; ctx.lineWidth = 3.4*s;
+  ctx.strokeStyle = skin; ctx.lineWidth = 3.4*s;
   for (const [h, sx] of [[hl, -6.2], [hr, 6.2]]){ ctx.beginPath(); ctx.moveTo(x + sx*s, y - 31*s + bob); ctx.lineTo(x + h[0], y + h[1] + bob); ctx.stroke(); }
   ctx.fillStyle = k.shirt; rrect(ctx, x - 7.5*s, y - 36*s + bob, 15*s, 28*s, 5*s); ctx.fill();
-  ctx.fillStyle = '#7a5642'; ell(ctx, x, y - 42*s + bob, 6.4*s, 6.8*s); ctx.fill();
+  ctx.fillStyle = skin; ell(ctx, x, y - 42*s + bob, 6.4*s, 6.8*s); ctx.fill();
   ctx.fillStyle = '#1a1511'; ctx.beginPath(); ctx.arc(x, y - 43.5*s + bob, 6.8*s, Math.PI*1.02, Math.PI*1.98); ctx.fill();
+  if (k.style === 0){ ell(ctx, x, y - 52.6*s + bob, 2.6*s, 2.6*s); ctx.fill(); }                                   // top-knot (จุก)
+  else if (k.style === 1){ ell(ctx, x - 6.6*s, y - 41*s + bob, 2.4*s, 3*s); ctx.fill(); ell(ctx, x + 6.6*s, y - 41*s + bob, 2.4*s, 3*s); ctx.fill(); }   // pigtails
+  // a small smile, brighter while the child holds a krathong
+  ctx.strokeStyle = 'rgba(30,18,12,.75)'; ctx.lineWidth = Math.max(0.8, 0.9*s); ctx.beginPath(); ctx.arc(x, y - 40.6*s + bob, 2.3*s, 0.2, Math.PI - 0.2); ctx.stroke();
+  ctx.strokeStyle = skin; ctx.lineWidth = 3.4*s;
   if (holding){ ctx.strokeStyle = 'rgba(255,210,150,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y - 42*s + bob, 6.8*s, Math.PI*1.1, Math.PI*1.9); ctx.stroke(); }
   // the water hides the legs
   ctx.fillStyle = 'rgba(10,32,52,.62)'; ell(ctx, x, y - 7*s, 15*s, 5.5*s); ctx.fill();
@@ -1409,7 +1428,7 @@ function drawKid(k){
     ctx.save(); ctx.translate(x, y - 54*s + bob*0.4);
     if (own) ctx.drawImage(own, -30*ks, -52*ks, 60*ks, 60*ks); else drawBoatSprite(ctx, it.t, ks, k.seed);
     ctx.restore();
-    if (k.state === 'carry' && k.t < 1.8) chip(k.line, x, y - 112*s);
+    if (k.state === 'carry' && k.t < 2.6) chip(k.line, x, y - 112*s);
   }
   ctx.restore();
 }

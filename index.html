@@ -1406,9 +1406,18 @@ let kidPhase = null, kidPlayN = 1, nextKid2 = 0, nextChat = 0;
 const rndPick = (a) => a[Math.floor(Math.random()*a.length)];
 function newKid(over){
   return Object.assign({ x:0, z:0.7, state:'play', t:0, boat:null, item:null, seed:Math.random()*100, shirt:rndPick(KID_SHIRTS), skin:rndPick(KID_SKIN),
-    style:Math.floor(Math.random()*3), line:rndPick(KID_LINES), tx:null, tz:null, rest:0, wave:0, dir:1, stroke:0 }, over);
+    style:Math.floor(Math.random()*3), line:rndPick(KID_LINES), tx:null, tz:null, rest:0, restMax:0, act:'tread', wave:0, dir:1, stroke:0 }, over);
 }
 /* Swim anywhere in the river, near or far: of a few random spots take the one farthest from the other children. */
+/* A child never just floats: every pause is an activity: treading water (sculling arms, sometimes waving), splashing, or a
+   dive that goes under and comes up a little way off. */
+function startRest(k, secs, canWave){
+  const r = Math.random();
+  k.act = r < 0.35 ? 'splash' : r < 0.65 ? 'dive' : 'tread';
+  if (k.act === 'dive'){ secs = Math.max(secs, 2.6); k.diveFrom = k.x; k.diveTo = Math.max(W*0.04, Math.min(W*0.96, k.x + (Math.random() < 0.5 ? -1 : 1)*(60 + Math.random()*100))); }
+  k.rest = k.restMax = secs;
+  k.wave = k.act === 'tread' && canWave && Math.random() < 0.6 ? Math.min(secs, 1.8) : 0;
+}
 function pickSwimSpot(k){
   const { y0, y1 } = lane(), span = y1 - y0;
   let best = null, bestScore = -1;
@@ -1464,12 +1473,12 @@ function updateKids(dt, now){
   }
   // while waiting the children chat: two of them trade a joke, a lone child mutters now and then
   if (phase === 'wait' && now > (nextChat || 0)){
-    const talkers = kids.filter(k => k.state === 'play' && !k.peek && !k.reading && k.x > 30 && k.x < W - 30);
+    const talkers = kids.filter(k => k.state === 'play' && !k.peek && !k.reading && !(k.rest > 0 && k.act === 'dive') && k.x > 30 && k.x < W - 30);
     if (talkers.length >= 2){
       const a = talkers[Math.floor(Math.random()*talkers.length)], b = talkers.filter(k => k !== a).sort((p, q) => Math.abs(p.x - a.x) - Math.abs(q.x - a.x))[0];
       const c = rndPick(KID_CHATS);
       a.say = { text:c[0], t0:now, t1:now + 2400 }; b.say = { text:c[1], t0:now + 2600, t1:now + 5000 };
-      a.rest = Math.max(a.rest, 5.2); b.rest = Math.max(b.rest, 5.2); a.wave = b.wave = 0;
+      a.rest = a.restMax = Math.max(a.rest, 5.2); b.rest = b.restMax = Math.max(b.rest, 5.2); a.wave = b.wave = 0; a.act = b.act = 'tread';   // they tread water while talking
       a.dir = b.x > a.x ? 1 : -1; b.dir = -a.dir;
       nextChat = now + 9000 + Math.random()*9000;
     } else if (talkers.length === 1){
@@ -1483,7 +1492,7 @@ function updateKids(dt, now){
     if (k.state !== 'play'){ k.reading = null; k.peek = null; }
     if (k.state === 'play' && k.reading){   // reading: float beside the drifting krathong, in front of it, facing it
       const rb = k.reading.b;
-      if (boats.get(rb.item.k) !== rb || now > k.reading.until){ k.reading = null; k.rest = 0.4; pickSwimSpot(k); }
+      if (boats.get(rb.item.k) !== rb || now > k.reading.until){ k.reading = null; k.rest = 0; pickSwimSpot(k); }
       else {
         const pg = boatGeom(rb), tx = pg.x + k.reading.side*40*pg.s;
         const gap = tx - k.x; k.x += gap*Math.min(1, dt*4); k.z += (Math.min(1, rb.z + 0.015) - k.z)*Math.min(1, dt*4);
@@ -1493,8 +1502,14 @@ function updateKids(dt, now){
     }
     if (k.state === 'play'){
       if (k.rest > 0){
-        k.rest -= dt;
+        k.rest -= dt; k.stroke += dt*5;
         if (k.wave > 0) k.wave -= dt;
+        if (k.act === 'dive'){            // under the surface the child swims to a spot a little way off
+          const p = 1 - Math.max(0, k.rest)/k.restMax, e = Math.max(0, Math.min(1, (p - 0.25)/0.5));
+          k.x = k.diveFrom + (k.diveTo - k.diveFrom)*e;
+        } else {                           // treading water / splashing: drift gently in a small circle
+          k.x += Math.cos(T*1.1 + k.seed)*7*s*dt; k.z += Math.sin(T*0.9 + k.seed)*0.006*dt;
+        }
         if (k.rest <= 0 && !kidMaybePeek(k, now)) pickSwimSpot(k);
       } else {
         if (k.peek && (now > k.peekUntil || boats.get(k.peek.item.k) !== k.peek || k.peek.launch)){ k.peek = null; k.peekCool = now + 6000; pickSwimSpot(k); }
@@ -1509,7 +1524,7 @@ function updateKids(dt, now){
           k.say = { text:kidQuote(pb.item.w), t0:now, t1:now + 2500 }; k.say2 = { text:kidReact(pb.item.w), t0:now + 2600, t1:now + 4600 };
           continue;
         }
-        else if (d < 10){ k.rest = 1.5 + Math.random()*3.5; k.wave = Math.random() < 0.55 ? Math.min(k.rest, 1.8) : 0; if (Math.random() < 0.5) addRing(k.x, lane().y0 + span*k.z, s*0.8); }
+        else if (d < 10){ startRest(k, 1.5 + Math.random()*3.5, true); if (Math.random() < 0.5) addRing(k.x, lane().y0 + span*k.z, s*0.8); }
         else {   // swim in a straight line toward the spot, whatever the direction
           const step = Math.min(d, 30*s*dt); k.x += dx/d*step; k.z += dy/d*step/span;
           if (Math.abs(dx) > 3) k.dir = dx > 0 ? 1 : -1;
@@ -1561,6 +1576,14 @@ function bubble(text, x, y){
   ctx.fillStyle = '#1d2a36'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, bx + w/2, y - h/2 - 6);
   ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
 }
+function drawDrops(x, y, s, n, off){
+  ctx.fillStyle = 'rgba(235,245,250,.85)';
+  for (let i = 0; i < n; i++){
+    const t = (T*1.7 + i/n + off) % 1, dx = (i - (n - 1)/2)*5.5*s*(0.5 + t);
+    ctx.globalAlpha = 0.9*(1 - t); ell(ctx, x + dx, y - (40*t - 52*t*t)*s, 1.3*s, 1.3*s); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
 /* Every child is drawn swimming: only the head and shoulders show above the water and they get around with arm strokes.
    When it picks up a krathong one arm reaches down to the water and then holds it up while the other arm keeps stroking. */
 function drawKid(k){
@@ -1569,6 +1592,10 @@ function drawKid(k){
   const bob = Math.sin(T*2 + k.seed)*1.1*s, shY = y - 8*s + bob;
   const scooping = k.state === 'scoop', holding = !!k.item && (k.state === 'carry' || (scooping && k.t > 0.5));
   const nowMs = performance.now();
+  // what a waiting child is doing right now (null while swimming somewhere, scooping or carrying)
+  const act = (k.state === 'play' && !moving) ? (k.reading ? 'tread' : (k.act || 'tread')) : null;
+  const dp = (act === 'dive' && k.restMax > 0) ? 1 - Math.max(0, k.rest)/k.restMax : 0;
+  const sink = act === 'dive' ? (dp < 0.22 ? dp/0.22 : dp > 0.78 ? (1 - dp)/0.22 : 1) : 0;   // 0 at the surface, 1 fully under
   ctx.save(); ctx.lineCap = 'round';
   // warm light from the krathong it holds
   if (holding){
@@ -1591,12 +1618,19 @@ function drawKid(k){
     else if (scooping){ e = Math.min(1, (k.t - 0.5)/0.7); rx = -18 + 11*e; ry = -4 - 29*e; }                       // lift it overhead
     arms = [[-6.5, rx, ry], k.state === 'carry' ? stroke(6.5, ph) : [6.5, 11, -2 + Math.sin(T*4)*1.2]];
     if (k.state === 'carry') arms[0] = [-6.5, -8, -33];
+  } else if (act === 'splash'){            // slapping the water with both arms in turn
+    const lift = (o) => Math.max(0, Math.sin(T*8 + o));
+    arms = [[-6.5, -13 - 3*lift(0), -3 - 15*lift(0)], [6.5, 13 + 3*lift(Math.PI), -3 - 15*lift(Math.PI)]];
+  } else if (act){                          // treading water: arms sculling in small circles
+    const a1 = T*5 + k.seed, a2 = a1 + Math.PI;
+    arms = [[-6.5, -13 + 3*Math.cos(a1), -3 + 2.5*Math.sin(a1)], [6.5, 13 + 3*Math.cos(a2), -3 + 2.5*Math.sin(a2)]];
+    if (k.wave > 0) arms[1] = [6.5, 6.5 + Math.sin(T*9)*4, -33];
   } else {
     arms = [stroke(-6.5, ph), stroke(6.5, ph + Math.PI)];
-    if (k.wave > 0) arms[1] = [6.5, 6.5 + Math.sin(T*9)*4, -33];
   }
   const raised = new Set();
   arms.forEach((a, i) => { if (a[2] < -20) raised.add(i); });
+  if (sink > 0){ ctx.save(); ctx.beginPath(); ctx.rect(x - 80*s, y - 120*s, 160*s, 119*s); ctx.clip(); ctx.translate(0, sink*34*s); }   // sinking below the surface
   for (let i = 0; i < 2; i++){
     const a = arms[i];
     ctx.strokeStyle = skin; ctx.lineWidth = 3.4*s; ctx.beginPath(); ctx.moveTo(x + a[0]*s, shY); ctx.lineTo(x + a[1]*s, y + a[2]*s + bob); ctx.stroke();
@@ -1610,6 +1644,13 @@ function drawKid(k){
   else if (k.style === 1){ ell(ctx, x - 6.6*s, y - 16*s + bob, 2.4*s, 3*s); ctx.fill(); ell(ctx, x + 6.6*s, y - 16*s + bob, 2.4*s, 3*s); ctx.fill(); }   // pigtails
   ctx.strokeStyle = 'rgba(30,18,12,.75)'; ctx.lineWidth = Math.max(0.8, 0.9*s); ctx.beginPath(); ctx.arc(x, y - 15.6*s + bob, 2.3*s, 0.2, Math.PI - 0.2); ctx.stroke();
   if (holding){ ctx.strokeStyle = 'rgba(255,210,150,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y - 17*s + bob, 6.8*s, Math.PI*1.1, Math.PI*1.9); ctx.stroke(); }
+  if (sink > 0) ctx.restore();
+  // water play: drops thrown up by a splash, and by a dive going under / coming up; bubbles while under
+  if (act === 'splash'){ for (let i = 0; i < 2; i++){ if (Math.max(0, Math.sin(T*8 + i*Math.PI)) > 0.6) drawDrops(x + arms[i][1]*s, y - 4*s, s, 4, i*0.5); } }
+  if (act === 'dive'){
+    if (sink > 0.05 && sink < 0.97 && (dp < 0.3 || dp > 0.7)) drawDrops(x, y - 3*s, s, 7, k.seed);
+    if (sink > 0.9){ ctx.strokeStyle = 'rgba(230,240,245,.65)'; ctx.lineWidth = 1; for (let i = 0; i < 3; i++){ const t = (T*1.4 + i/3) % 1; ctx.beginPath(); ctx.arc(x + Math.sin(T*3 + i*2)*5*s, y - 2*s - t*6*s, (1 + t)*s, 0, TAU); ctx.stroke(); } }
+  }
   // the water over the lower body
   ctx.fillStyle = 'rgba(10,32,52,.55)'; ell(ctx, x, y - 1.5*s, 14*s, 4.6*s); ctx.fill();
   // the krathong held up in the raised hand

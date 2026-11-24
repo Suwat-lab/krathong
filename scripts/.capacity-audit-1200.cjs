@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const http = require('node:http');
 const fs = require('node:fs');
@@ -16,7 +16,7 @@ const root = path.resolve(__dirname, '..');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'e-kratong-capacity-'));
 const dbFile = path.join(tmp, 'fixture.db'), logDir = path.join(tmp, 'log');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, Math.max(0,ms)));
-const users = 1200, musicFile = '/assets/Riverbound_Lights.mp3';
+const users = 1200, musicFile = '/assets/ramwong-loy-krathong.mp3';
 const compareIdle = process.argv.includes('--check-idle');
 const idleStats = { standard:{ok:0}, short:{ok:0} };
 const musicBytes = fs.statSync(path.join(root, musicFile.slice(1))).size;

@@ -374,7 +374,7 @@ footer a{color:var(--candle)}
         <button class="btn icon-btn" id="soundBtn" type="button" aria-expanded="false" aria-controls="soundPanel" aria-label="ตั้งค่าภาพและเสียง" title="ตั้งค่าภาพและเสียง"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 7h4m4 0h10M3 17h10m4 0h4"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg><span>ตั้งค่า</span></button>
         <div class="sound-panel" id="soundPanel" hidden role="group" aria-label="ตั้งค่าภาพและเสียง">
           <label class="toggle" for="powerSave"><input type="checkbox" id="powerSave"><span class="track" aria-hidden="true"></span><span>ประหยัดแบต<br><span class="opt">ลดความละเอียดและจำกัดภาพเคลื่อนไหวที่ 30 เฟรม/วินาที</span></span></label>
-          <label class="toggle" for="sndMusic"><input type="checkbox" id="sndMusic"><span class="track" aria-hidden="true"></span><span>เพลงประกอบ<br><span class="opt" id="musicName">Riverbound Lights · ลอยกระทง 2569</span></span></label>
+          <label class="toggle" for="sndMusic"><input type="checkbox" id="sndMusic"><span class="track" aria-hidden="true"></span><span>เพลงประกอบ<br><span class="opt" id="musicName">รำวงลอยกระทง</span></span></label>
           <label class="file-pick">เลือกไฟล์เพลงจากเครื่องนี้<input type="file" id="musicFile" accept="audio/*" class="sr"></label>
           <button class="btn btn-sm btn-quiet" type="button" id="resetMusic" hidden>กลับไปใช้เพลงของงาน</button>
         </div>
@@ -1540,8 +1540,12 @@ function frame(now){
 /* ---------------- sound ---------------- */
 const player = $('#festivalPlayer'), musicBtn = $('#musicBtn'), musicSwitch = $('#sndMusic');
 const musicName = $('#musicName'), musicFile = $('#musicFile'), resetMusic = $('#resetMusic');
-const festivalTrack = { url:'assets/Riverbound_Lights.mp3', name:musicName.textContent };
-let eventTrack = festivalTrack, localTrack = null, musicOn = false, playRequest = 0;
+const festivalTrack = { url:'assets/ramwong-loy-krathong.mp3', name:musicName.textContent };
+let eventTrack = festivalTrack, localTrack = null, musicOn = false, playRequest = 0, autoPending = false;
+/* auto-start: the first visit plays the festival song on its own; after that the listener's last choice is remembered */
+const MUSIC_PREF = 'e-kratong.music';
+const getMusicPref = () => { try { return localStorage.getItem(MUSIC_PREF); } catch (e) { return null; } };
+const setMusicPref = (v) => { try { localStorage.setItem(MUSIC_PREF, v); } catch (e) {} };
 let AC = null;
 player.volume = 0.7;
 
@@ -1605,7 +1609,10 @@ function handleMusicError(error, request){
   if (request !== playRequest || !musicOn) return;
   if (error.name === 'AbortError' || error.code === 1){ pauseMusic(); return; }
   if (error.name === 'NotAllowedError'){
-    pauseMusic(); showToast('แตะเปิดเพลงอีกครั้งเพื่อเริ่มเล่น'); return;
+    pauseMusic();
+    if (autoPending) armAutoplay();   /* browser blocked sound before any touch: start on the first tap instead */
+    else showToast('แตะเปิดเพลงอีกครั้งเพื่อเริ่มเล่น');
+    return;
   }
   if (localTrack || eventTrack !== festivalTrack){
     if (localTrack) clearLocalTrack(); else eventTrack = festivalTrack;
@@ -1641,8 +1648,24 @@ player.addEventListener('play', () => {
 player.addEventListener('pause', () => {
   if (musicOn && player.paused && !player.error) pauseMusic();
 });
-musicBtn.addEventListener('click', () => { if (musicOn) pauseMusic(); else startMusic(); });
-musicSwitch.addEventListener('change', () => { if (musicSwitch.checked) startMusic(); else pauseMusic(); });
+function armAutoplay(){
+  const events = ['pointerdown', 'keydown'];
+  const go = (e) => {
+    if (e.target.closest && e.target.closest('#musicBtn, #soundPanel')) return;   /* those controls handle themselves */
+    for (const n of events) document.removeEventListener(n, go, true);
+    autoPending = false;
+    if (!musicOn && getMusicPref() !== 'off') startMusic();
+  };
+  for (const n of events) document.addEventListener(n, go, true);
+}
+function autoStartMusic(){
+  if (getMusicPref() === 'off') return;
+  autoPending = true;
+  startMusic();                       /* works where autoplay is allowed; otherwise handleMusicError arms the first tap */
+  player.addEventListener('playing', () => { autoPending = false; }, { once:true });
+}
+musicBtn.addEventListener('click', () => { autoPending = false; if (musicOn){ setMusicPref('off'); pauseMusic(); } else { setMusicPref('on'); startMusic(); } });
+musicSwitch.addEventListener('change', () => { autoPending = false; if (musicSwitch.checked){ setMusicPref('on'); startMusic(); } else { setMusicPref('off'); pauseMusic(); } });
 musicFile.addEventListener('change', () => {
   const file = musicFile.files[0]; if (!file) return;
   clearLocalTrack();
@@ -2586,6 +2609,7 @@ if (local.items[0]) lastMineK = local.items[0].k;
 updateModeUI(); renderPledges();
 syncScreenFromHash();
 ready = init();
+if (!window.claude) autoStartMusic();   /* the claude.ai preview has no mp3 files, so it stays silent */
 resize(); sizePreview();
 if (window.ResizeObserver){
   new ResizeObserver(() => resize()).observe(sceneEl);

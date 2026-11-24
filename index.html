@@ -1338,15 +1338,21 @@ function kidReact(t){
   return rndPick(KID_REACTS);
 }
 function kidQuote(t){ const g = Array.from(String(t).replace(/\s+/g, ' ').trim()); return '“' + g.slice(0, 32).join('') + (g.length > 32 ? '…' : '') + '”'; }
-function kidFindWish(k){
-  const { y0, y1 } = lane(), ky = y0 + (y1 - y0)*k.z;
-  let best = null, bd = 1e9;
+/* Now and then, when a child picks where to swim next while playing, the spot is a randomly chosen krathong with a
+   public wish somewhere on screen: it swims over to it, stays beside it while it drifts, and reads the wish aloud. */
+function kidMaybePeek(k, now){
+  if (now < (k.peekCool || 0) || Math.random() > 0.3) return false;
+  const pool = [];
   for (const b of boats.values()){
-    if (b.launch || b.item.p || !b.item.w || hiddenKeys.has(b.item.k) || b.x < 20 || b.x > W - 20) continue;
-    const g = boatGeom(b), d = Math.hypot(g.x - k.x, g.y - ky);
-    if (d < 170 && d < bd){ bd = d; best = b; }
+    if (b.launch || b.item.p || !b.item.w || hiddenKeys.has(b.item.k) || b.x < 40 || b.x > W - 40) continue;
+    if (kids.some(o => o !== k && ((o.peek && o.peek === b) || (o.reading && o.reading.b === b)))) continue;   // one reader per krathong
+    pool.push(b);
   }
-  return best;
+  if (!pool.length) return false;
+  const pb = pool[Math.floor(Math.random()*pool.length)], g = boatGeom(pb);
+  k.peek = pb; k.peekUntil = now + 25000; k.peekSide = k.x < pb.x ? -1 : 1;
+  k.tx = pb.x + k.peekSide*40*g.s; k.tz = Math.min(1, pb.z + 0.015);
+  return true;
 }
 const KID_MUTTERS = ['อันนี้สวย', 'มีเงินไหมนะ', 'น้ำเย็นจัง', 'ขอให้รวย ๆ', 'ดวงจันทร์สวยจัง', 'ว่ายคนเดียวเหงาจัง', 'เมื่อไหร่จะถึงรอบเก็บนะ'];
 const KID_SHIRTS = ['#3b5b7a', '#7a4b3b', '#4b7a5b', '#6b4b7a', '#7a6a3b', '#8a4a5a'];
@@ -1458,7 +1464,7 @@ function updateKids(dt, now){
   }
   // while waiting the children chat: two of them trade a joke, a lone child mutters now and then
   if (phase === 'wait' && now > (nextChat || 0)){
-    const talkers = kids.filter(k => k.state === 'play' && !k.peek && k.x > 30 && k.x < W - 30);
+    const talkers = kids.filter(k => k.state === 'play' && !k.peek && !k.reading && k.x > 30 && k.x < W - 30);
     if (talkers.length >= 2){
       const a = talkers[Math.floor(Math.random()*talkers.length)], b = talkers.filter(k => k !== a).sort((p, q) => Math.abs(p.x - a.x) - Math.abs(q.x - a.x))[0];
       const c = rndPick(KID_CHATS);
@@ -1474,28 +1480,34 @@ function updateKids(dt, now){
   for (let i = kids.length - 1; i >= 0; i--){
     const k = kids[i], s = SC*(0.42 + 0.95*k.z)*KID_SIZE;
     k.moving = false;
+    if (k.state !== 'play'){ k.reading = null; k.peek = null; }
+    if (k.state === 'play' && k.reading){   // reading: float beside the drifting krathong, in front of it, facing it
+      const rb = k.reading.b;
+      if (boats.get(rb.item.k) !== rb || now > k.reading.until){ k.reading = null; k.rest = 0.4; pickSwimSpot(k); }
+      else {
+        const pg = boatGeom(rb), tx = pg.x + k.reading.side*40*pg.s;
+        const gap = tx - k.x; k.x += gap*Math.min(1, dt*4); k.z += (Math.min(1, rb.z + 0.015) - k.z)*Math.min(1, dt*4);
+        k.dir = -k.reading.side; k.moving = Math.abs(gap) > 3; if (k.moving) k.stroke += dt*5;
+        continue;
+      }
+    }
     if (k.state === 'play'){
       if (k.rest > 0){
         k.rest -= dt;
         if (k.wave > 0) k.wave -= dt;
-        if (k.rest <= 0) pickSwimSpot(k);
+        if (k.rest <= 0 && !kidMaybePeek(k, now)) pickSwimSpot(k);
       } else {
-        // swimming past a krathong with a wish: drift over, take a look
-        if (!k.peek && now > (k.scanAt || 0)){
-          k.scanAt = now + 500;
-          if (now > (k.peekCool || 0) && Math.random() < 0.5){
-            const pb = kidFindWish(k);
-            if (pb){ k.peek = pb; k.peekUntil = now + 12000; k.tx = pb.x + (k.x < pb.x ? -26 : 26)*s; k.tz = pb.z; }
-          }
+        if (k.peek && (now > k.peekUntil || boats.get(k.peek.item.k) !== k.peek || k.peek.launch)){ k.peek = null; k.peekCool = now + 6000; pickSwimSpot(k); }
+        if (k.peek){   // the krathong keeps drifting: re-aim at the spot beside it as it moves
+          const pg = boatGeom(k.peek); k.tx = pg.x + k.peekSide*40*pg.s; k.tz = Math.min(1, k.peek.z + 0.015);
         }
-        if (k.peek && now > k.peekUntil){ k.peek = null; k.peekCool = now + 6000; pickSwimSpot(k); }
         const span = lane().y1 - lane().y0, dx = k.tx - k.x, dy = (k.tz - k.z)*span, d = Math.hypot(dx, dy);
-        if (d < 10 && k.peek){
+        if (d < 14 && k.peek){
+          // arrived beside the krathong: stay with it and read the wish aloud
           const pb = k.peek; k.peek = null; k.peekCool = now + 9000 + Math.random()*8000;
-          if (boats.get(pb.item.k) === pb && pb.item.w){
-            k.dir = pb.x > k.x ? 1 : -1; k.rest = 4.8; k.wave = 0;
-            k.say = { text:kidQuote(pb.item.w), t0:now, t1:now + 2500 }; k.say2 = { text:kidReact(pb.item.w), t0:now + 2600, t1:now + 4600 };
-          } else pickSwimSpot(k);
+          k.reading = { b:pb, side:k.peekSide, until:now + 4800 }; k.wave = 0;
+          k.say = { text:kidQuote(pb.item.w), t0:now, t1:now + 2500 }; k.say2 = { text:kidReact(pb.item.w), t0:now + 2600, t1:now + 4600 };
+          continue;
         }
         else if (d < 10){ k.rest = 1.5 + Math.random()*3.5; k.wave = Math.random() < 0.55 ? Math.min(k.rest, 1.8) : 0; if (Math.random() < 0.5) addRing(k.x, lane().y0 + span*k.z, s*0.8); }
         else {   // swim in a straight line toward the spot, whatever the direction

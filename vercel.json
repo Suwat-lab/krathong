@@ -3,9 +3,9 @@
   "buildCommand": "node scripts/build-static.mjs",
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://YOUR-BACKEND.example.com/api/:path*" },
-    { "source": "/log/:path*", "destination": "https://YOUR-BACKEND.example.com/log/:path*" },
-    { "source": "/music", "destination": "https://YOUR-BACKEND.example.com/music" }
+    { "source": "/api/:path*", "destination": "https://krathong-production.up.railway.app/api/:path*" },
+    { "source": "/log/:path*", "destination": "https://krathong-production.up.railway.app/log/:path*" },
+    { "source": "/music", "destination": "https://krathong-production.up.railway.app/music" }
   ],
   "headers": [
     {

@@ -51,6 +51,8 @@ const CONFIG = {
   rateLimit: env.RATE_LIMIT !== 'off',
   trustProxy: env.TRUST_PROXY === '1',      // set when running behind nginx / a load balancer
   adminToken: env.ADMIN_TOKEN || '',
+  cacheClearEveryH: num(env.CACHE_CLEAR_EVERY_H, 2),   // clear the server's caches every N hours, on the hour (matches the children's collecting round)
+  cacheClearTzH: num(env.CACHE_CLEAR_TZ_H, 7),         // whose clock: hours ahead of UTC (7 = Thailand)
   publicUrl: env.PUBLIC_URL || '',          // link encoded in the big-screen QR code (auto-detected if empty)
   moments: (env.MOMENTS || '19:00,20:00,21:00,22:00').split(',').map((s) => s.trim()).filter((s) => /^\d{1,2}:\d{2}$/.test(s)),
   reportHide: num(env.REPORT_HIDE, 3),      // reports from this many different people hide a krathong
@@ -635,6 +637,7 @@ function health(req, res){
     rssMB: Math.round(m.rss / 1e6),
     heapUsedMB: Math.round(m.heapUsed / 1e6),
     rateBuckets: buckets.size,
+    cacheClear: { runs: cacheStats.runs, lastAt: cacheStats.lastAt || null, lastMs: cacheStats.lastMs, nextAt: cacheStats.nextAt || null },
   });
 }
 
@@ -664,6 +667,7 @@ const server = http.createServer(async (req, res) => {
       if (parts.length === 2 && parts[1] === 'report' && m === 'POST') return reportKrathong(req, res, parts[0]);
     }
     if (p === '/api/moment' && m === 'POST') return await postMoment(req, res);
+    if (p === '/api/admin/clear-cache' && m === 'POST') return await postClearCache(req, res);
     if (p === '/api/config' && m === 'GET') return getConfig(req, res);
     if (p === '/api/me' && m === 'GET') return getMe(req, res);
     if (p === '/api/pledges' && m === 'PUT') return await putPledges(req, res);
@@ -700,6 +704,39 @@ function sweep(){
 }
 setInterval(sweep, 60e3);
 
+/* ---------------- cache clearing: the real work behind the children collecting krathongs ----------------
+   Every CACHE_CLEAR_EVERY_H hours on the hour (00:00, 02:00, … Thailand time unless CACHE_CLEAR_TZ_H says otherwise) the server
+   clears what it keeps only for speed: it folds the recent log segments into one fresh checkpoint, empties the rate-limit
+   buckets and the music/page/map caches (rebuilt on the next request) and tells SQLite to flush its WAL and give back its page
+   cache. It never deletes krathongs, wishes, blessings or workshop rooms: those stay until they expire after WINDOW_HOURS. */
+const cacheStats = { lastAt: 0, lastMs: 0, runs: 0, nextAt: 0 };
+function clearCaches(reason){
+  const t0 = Date.now();
+  try {
+    checkpoint(); head();
+    buckets.clear();
+    musicCache = { at: 0, file: null };
+    loadPage();
+    workshop.clearCache();
+    try { db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); db.exec('PRAGMA shrink_memory'); } catch (e) {}
+    if (typeof global.gc === 'function') global.gc();
+  } catch (e){ console.error('[cache] clearing failed', e.message); }
+  cacheStats.lastAt = t0; cacheStats.lastMs = Date.now() - t0; cacheStats.runs++;
+  console.log('[cache] cleared (' + reason + ') in ' + cacheStats.lastMs + ' ms');
+}
+function scheduleCacheClear(){
+  if (CONFIG.cacheClearEveryH <= 0) return;
+  const step = CONFIG.cacheClearEveryH*3600e3, off = CONFIG.cacheClearTzH*3600e3, now = Date.now();
+  const at = Math.ceil((now + off + 1000)/step)*step - off;
+  cacheStats.nextAt = at;
+  setTimeout(() => { clearCaches('scheduled'); scheduleCacheClear(); }, at - now).unref();
+}
+async function postClearCache(req, res){
+  if (!isAdmin(req)) return send(res, 403, { error: 'forbidden' });
+  clearCaches('admin');
+  send(res, 200, { clearedAt: cacheStats.lastAt, tookMs: cacheStats.lastMs });
+}
+
 function shutdown(){
   console.log('\nshutting down…');
   server.close(() => { db.close(); process.exit(0); });
@@ -712,6 +749,7 @@ process.on('SIGTERM', shutdown);
 loadPage();
 sweep(); rebuildRiver(); recount();
 checkpoint(); head();
+scheduleCacheClear();
 server.listen(CONFIG.port, CONFIG.host, () => {
   console.log('E-Kratong is running at http://localhost:' + server.address().port);
   console.log('  database: ' + CONFIG.dbFile);

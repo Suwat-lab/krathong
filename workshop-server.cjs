@@ -217,6 +217,6 @@ function setupWorkshop({db, send, readJson, httpError, ownerOf, clientIp, allow,
     }
     fail(404,'not_found');
   }
-  return {route,sweep:()=>{q.expire.run(Date.now()-hours48);for(const [id,group] of streams)if(!q.room.get(id,Date.now()-hours48))for(const res of group)res.end();}};
+  return {route,clearCache:()=>{mapCache=null;},sweep:()=>{q.expire.run(Date.now()-hours48);for(const [id,group] of streams)if(!q.room.get(id,Date.now()-hours48))for(const res of group)res.end();}};
 }
 module.exports={setupWorkshop};
